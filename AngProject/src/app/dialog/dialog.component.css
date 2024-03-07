@@ -1,0 +1,30 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Additional global styles */
+body {
+  background-color: rgb(68, 68, 68);
+}
+
+.pop-window {
+  position: relative;
+  background-color: rgb(68, 68, 68);
+}
+
+.close-btn {
+  position: relative;
+  float: right;
+  margin-top: 1%; /* Adjust this value to move the button up */
+  margin-right: 1%; /* Adjust this value to move the button to the right */
+  cursor: pointer;
+  font-size: 90%;
+  color: rgb(68, 68, 68);
+  background-color: red;
+  border-radius: 50%; /* Use border-radius to make it a circle */
+  height: 1.5rem; /* Increase the size of the button */
+  width: 1.5rem; /* Increase the size of the button */
+  border: none;
+}
