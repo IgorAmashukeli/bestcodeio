@@ -4,7 +4,6 @@
   box-sizing: border-box;
 }
 
-/* Additional global styles */
 body {
   background-color: rgb(68, 68, 68);
 }
@@ -17,14 +16,18 @@ body {
 .close-btn {
   position: relative;
   float: right;
-  margin-top: 1%; /* Adjust this value to move the button up */
-  margin-right: 1%; /* Adjust this value to move the button to the right */
+  margin-top: 1%;
+  margin-right: 1%;
   cursor: pointer;
   font-size: 90%;
   color: rgb(68, 68, 68);
   background-color: red;
-  border-radius: 50%; /* Use border-radius to make it a circle */
-  height: 1.5rem; /* Increase the size of the button */
-  width: 1.5rem; /* Increase the size of the button */
+  border-radius: 50%;
+  height: 1.5rem;
+  width: 1.5rem;
   border: none;
+}
+
+.close-btn:hover {
+  background-color: rgb(255, 68, 68);
 }

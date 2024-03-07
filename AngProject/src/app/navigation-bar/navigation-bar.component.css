@@ -30,7 +30,7 @@ mat-toolbar {
 }
 
 .links-container a {
-  font-size: 2.5vw; /* Using viewport width for font size */
+  font-size: 2.5vw;
   font-weight: 500;
   margin-right: 2vw;
   margin-left: 1vw;
@@ -57,7 +57,7 @@ mat-toolbar {
   font-size: 1.5vw;
   font-weight: bolder;
   padding: 1vh 2vw;
-  background-color: rgb(174, 129, 255); /* Green */
+  background-color: rgb(174, 129, 255);
   color: rgb(46, 46, 46);
   text-align: center;
   text-decoration: none;
@@ -90,5 +90,5 @@ mat-toolbar {
 }
 
 .sign-in-button:hover {
-  background-color: rgb(242, 198, 255); /* Darker Green */
+  background-color: rgb(242, 198, 255);
 }
