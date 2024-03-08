@@ -13,6 +13,7 @@ export class DialogService {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.width = width;
     dialogConfig.height = height;
+
     return this.dialog.open(DialogComponent, dialogConfig);
   }
 }
