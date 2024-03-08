@@ -21,5 +21,7 @@ export class DialogComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  signInWithGoogle() {}
+  signInWithGoogle() {
+    this.auth.googleSigIn();
+  }
 }
