@@ -42,7 +42,7 @@ mat-toolbar {
 }
 
 .home {
-  color: rgb(102, 217, 239);
+  color: rgb(249, 38, 114);
 }
 
 .math {
@@ -50,7 +50,7 @@ mat-toolbar {
 }
 
 .programming {
-  color: rgb(249, 38, 114);
+  color: rgb(102, 217, 239);
 }
 
 .sign-in-button {
@@ -78,7 +78,7 @@ mat-toolbar {
 }
 
 .home:hover {
-  color: rgb(170, 255, 255);
+  color: rgb(255, 106, 182);
 }
 
 .math:hover {
@@ -86,7 +86,7 @@ mat-toolbar {
 }
 
 .programming:hover {
-  color: rgb(255, 106, 182);
+  color: rgb(170, 255, 255);
 }
 
 .sign-in-button:hover {
