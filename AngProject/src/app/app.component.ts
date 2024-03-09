@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavigationBarComponent } from './navigation-bar/navigation-bar.component';
-import { DialogService } from './dialog/dialog.service';
+import { DialogService } from './services/dialog.service';
 
 @Component({
   selector: 'app-root',
@@ -13,7 +13,7 @@ import { DialogService } from './dialog/dialog.service';
 export class AppComponent {
   constructor(private dialogService: DialogService) {}
 
-  openDialog() {
-    this.dialogService.openDialog('50%', '36%');
+  openDialog(component: any) {
+    this.dialogService.openDialog('50%', '36%', component);
   }
 }

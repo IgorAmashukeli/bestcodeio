@@ -5,11 +5,49 @@
     </div>
     <div class="links-container">
       <a class="home" routerLink="/">Home</a>
-      <a class="math" routerLink="/math">Math</a>
-      <a class="programming" routerLink="/programming">Programming</a>
+      <ng-container>
+        <a
+          *ngIf="!(auth.loggedIn$ | async)"
+          class="math"
+          routerLink="/"
+          (click)="openWarningDialogClick()"
+          >Math</a
+        >
+        <a *ngIf="auth.loggedIn$ | async" class="math" routerLink="/math"
+          >Math</a
+        >
+      </ng-container>
+      <ng-container>
+        <a
+          *ngIf="!(auth.loggedIn$ | async)"
+          class="programming"
+          routerLink="/"
+          (click)="openWarningDialogClick()"
+          >Programming</a
+        >
+        <a
+          *ngIf="auth.loggedIn$ | async"
+          class="programming"
+          routerLink="/programming"
+          >Programming</a
+        >
+      </ng-container>
     </div>
-    <button class="sign-in-button" (click)="onDialogButtonClick()">
-      Sign in
-    </button>
+    <ng-container>
+      <button
+        *ngIf="!(auth.loggedIn$ | async)"
+        class="sign-in-button"
+        (click)="openSignInDialogButtonClick()"
+      >
+        Sign in
+      </button>
+      <button
+        *ngIf="auth.loggedIn$ | async"
+        class="sign-in-button"
+        (click)="openSignInDialogButtonClick()"
+      >
+        Sign out
+      </button>
+    </ng-container>
   </div>
 </mat-toolbar>

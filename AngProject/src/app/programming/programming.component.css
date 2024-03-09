@@ -1,0 +1,26 @@
+body {
+  background-color: rgb(32, 28, 28);
+}
+
+.title {
+  color: rgb(249, 38, 114);
+  text-align: center;
+  margin-bottom: 2vh;
+  font-size: 3vw;
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.item {
+  width: 20vw;
+  height: 30vh;
+  margin: 0.5vw;
+  background-color: #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 4vw;
+}
