@@ -3,6 +3,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../services/auth.service';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-dialog',
@@ -12,14 +13,16 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
 })
 export class WarningDialogComponent implements OnInit {
+  currentRoute: string = '';
   constructor(
     public dialogRef: MatDialogRef<WarningDialogComponent>,
-    public auth: AuthService
+    public auth: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {}
 
-  closeDialog(): void {
+  public closeDialog(): void {
     this.dialogRef.close();
   }
 }

@@ -19,7 +19,7 @@ export class SignInDialogComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  closeDialog(): void {
+  public closeDialog(): void {
     this.dialogRef.close();
   }
 

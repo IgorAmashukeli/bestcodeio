@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
 import { UrlTree } from '@angular/router';
 import { AuthService } from './auth.service';
 import { inject } from '@angular/core';
-import { NavigationExtras } from '@angular/router';
+import { VariablesService } from './variables.service';
 
 export const AuthGuard: CanActivateFn = (
   route: ActivatedRouteSnapshot,
@@ -21,16 +21,12 @@ export const AuthGuard: CanActivateFn = (
   | UrlTree => {
   const authService = inject(AuthService);
   const router = inject(Router);
+  const variable = inject(VariablesService);
   if (authService.isLoggedIn()) {
+    variable.changePopUp(false);
     return true;
   } else {
-    const navigationExtras: NavigationExtras = {
-      state: { yourData: true },
-    };
-
-    const redirect = navigationExtras.state
-      ? navigationExtras.state['yourData']
-      : false;
-    return router.createUrlTree(['/' + redirect], navigationExtras);
+    variable.changePopUp(true);
+    return router.createUrlTree(['/']);
   }
 };

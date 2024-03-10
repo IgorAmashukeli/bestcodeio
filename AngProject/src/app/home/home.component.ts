@@ -5,6 +5,8 @@ import { Location } from '@angular/common';
 import { WarningDialogComponent } from '../warning_dialog/warning_dialog.component';
 import { NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { VariablesService } from '../services/variables.service';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'home',
@@ -17,14 +19,15 @@ export class HomeComponent {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private variableService: VariablesService
   ) {}
 
-  ngOnInit(): void {
-    this.currentRoute = this.router.url;
-    if (this.currentRoute === '/true') {
-      this.dialogService.openDialog('50%', '36%', WarningDialogComponent);
-      this.router.navigate(['/']);
+  async ngOnInit(): Promise<void> {
+    if (this.variableService.get_pop_up()) {
+      if (typeof alert !== 'undefined') {
+        alert('To view courses, please sign in first');
+      }
     }
   }
 }
