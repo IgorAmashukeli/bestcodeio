@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { NavigationBarComponent } from './navigation-bar/navigation-bar.component';
+import { NavigationBarComponent } from './navigation_bar/navigation_bar.component';
 import { DialogService } from './services/dialog.service';
 
 @Component({

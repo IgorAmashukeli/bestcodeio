@@ -7,12 +7,14 @@ import {
 } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { signInWithPopup } from 'firebase/auth';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { CommonModule, DOCUMENT } from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
+  private isLocalStorageAvailable = typeof localStorage !== 'undefined';
   loggedIn = new BehaviorSubject<boolean>(false);
   loggedIn$ = this.loggedIn.asObservable();
 
@@ -31,7 +33,9 @@ export class AuthService {
       (res) => {
         const currentUrl = this.router.url;
         this.router.navigate([currentUrl]);
-        localStorage.setItem('token', JSON.stringify(res.user?.uid));
+        if (this.isLocalStorageAvailable) {
+          localStorage.setItem('token', JSON.stringify(res.user?.uid));
+        }
       },
       (err) => {
         alert(err.message);
@@ -42,6 +46,9 @@ export class AuthService {
   googleSignOut() {
     this.fireauth.signOut().then(
       () => {
+        if (this.isLocalStorageAvailable) {
+          localStorage.removeItem('token');
+        }
         this.router.navigate(['/']);
       },
       (err) => {
@@ -51,6 +58,11 @@ export class AuthService {
   }
 
   public isLoggedIn(): boolean {
-    return !!this.loggedIn.value;
+    if (this.isLocalStorageAvailable) {
+      const token = JSON.parse(localStorage.getItem('token')!);
+      return token !== null && token.emailVerified !== false ? true : false;
+    } else {
+      return false;
+    }
   }
 }
