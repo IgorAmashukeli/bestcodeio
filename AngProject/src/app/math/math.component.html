@@ -1,70 +1,16 @@
 <body>
   <div class="title">Math courses</div>
   <div class="container">
-    <button class="item">
-      <img class="picture" src="../../assets/images/logic.png" />Logic
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/set.png" />Set theory
-    </button>
-    <button class="item">
+    <button
+      *ngFor="let route of mathRoutesNames; let i = index"
+      class="item"
+      [routerLink]="route"
+    >
       <img
         class="picture"
-        src="../../assets/images/combinatorics.png"
-      />Combinatorics
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/graph.png" />Graph theory
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/algebra.png" />Algebra
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/computation.png" />Theory of
-      computation
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/linear.png" />Linear algebra
-      and geometry
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/calculus.png" />Calculus
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/complex.png" />Complex
-      analysis
-    </button>
-    <button class="item">
-      <img
-        class="picture"
-        src="../../assets/images/probability.png"
-      />Probability theory
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/topology.png" />Topology
-    </button>
-    <button class="item">
-      <img
-        class="picture"
-        src="../../assets/images/functionalAn.png"
-      />Functional analysis
-    </button>
-    <button class="item">
-      <img
-        class="picture"
-        src="../../assets/images/differential.png"
-      />Differential geometry
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/algtop.png" />Algebraic
-      topology
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/number.png" />Number theory
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/category.png" />Category
-      theory
+        [src]="'../../assets/images/' + mathRoutesNames[i] + '.png'"
+      />
+      {{ mathTitles[i] }}
     </button>
   </div>
 </body>

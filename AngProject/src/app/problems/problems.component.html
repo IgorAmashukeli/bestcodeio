@@ -1,3 +1,174 @@
 <body>
-  Problems
+  <div
+    [ngClass]="{
+      'problems-title': isFlagTrue,
+      'problems-title2': !isFlagTrue
+    }"
+  >
+    {{ this.course }} problems
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr class="problem-header">
+          <th
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Title
+          </th>
+          <th
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Status
+          </th>
+          <th
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Solution
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="problem-body">
+          <td
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Problem1
+          </td>
+          <td
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Not solved
+          </td>
+          <td
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Link1
+          </td>
+        </tr>
+        <tr class="problem-body">
+          <td
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Problem2
+          </td>
+          <td
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Not solved
+          </td>
+          <td
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Link2
+          </td>
+        </tr>
+        <tr class="problem-body">
+          <td
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Problem3
+          </td>
+          <td
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Not solved
+          </td>
+          <td
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Link3
+          </td>
+        </tr>
+        <tr class="problem-body">
+          <td
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Problem4
+          </td>
+          <td
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Not solved
+          </td>
+          <td
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Link4
+          </td>
+        </tr>
+        <tr class="problem-body">
+          <td
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Problem5
+          </td>
+          <td
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Not solved
+          </td>
+          <td
+            [ngClass]="{
+              'problems-header': isFlagTrue,
+              'problems-header2': !isFlagTrue
+            }"
+          >
+            Link5
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </body>

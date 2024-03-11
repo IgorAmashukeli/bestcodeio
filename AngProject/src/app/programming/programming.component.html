@@ -1,71 +1,16 @@
 <body>
   <div class="title">Programming courses</div>
   <div class="container">
-    <button class="item">
-      <img class="picture" src="../../assets/images/hardware.png" />Computer
-      architecture
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/compiler.png" />Compilers
-      and translators
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/dsa.png" />Data structures
-      and algorithms
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/streaming.png" />Streaming
-      algorithms
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/operating.png" />Operating
-      systems
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/external.png" />External
-      memory algorithms
-    </button>
-    <button class="item">
+    <button
+      *ngFor="let route of programmingRouteNames; let i = index"
+      class="item"
+      [routerLink]="route"
+    >
       <img
         class="picture"
-        src="../../assets/images/concurrency.png"
-      />Concurrency
-    </button>
-    <button class="item">
-      <img
-        class="picture"
-        src="../../assets/images/functionalProg.png"
-      />Functional programming
-    </button>
-    <button class="item">
-      <img
-        class="picture"
-        src="../../assets/images/distributed.png"
-      />Distributed systems
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/networking.png" />Networking
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/databases.png" />Databases
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/security.png" />Security
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/system.png" />System design
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/manAn.png" />Data
-      management/analytics
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/ml.png" />Data
-      science/Machine learning
-    </button>
-    <button class="item">
-      <img class="picture" src="../../assets/images/quantum.png" />Quantum
-      computing
+        [src]="'../../assets/images/' + programmingRouteNames[i] + '.png'"
+      />
+      {{ programmingTitles[i] }}
     </button>
     <div></div>
   </div>
