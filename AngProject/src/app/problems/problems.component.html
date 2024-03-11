@@ -1,50 +1,68 @@
+<head>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+  />
+</head>
 <body>
-  <div
-    [ngClass]="{
-      'problems-title': isFlagTrue,
-      'problems-title2': !isFlagTrue
-    }"
-  >
-    <ng-container>
-      <img
-        *ngIf="isFlagTrue"
-        src="../../assets/images/math_backwards.png"
-        class="image-button"
-        routerLink="/math"
-      />
-      <img
-        *ngIf="!isFlagTrue"
-        src="../../assets/images/programming_backwards.png"
-        class="image-button"
-        routerLink="/programming"
-      />
-    </ng-container>
-    <div class="problems-title-text">{{ this.course }} problems</div>
-  </div>
   <div class="table-wrapper">
     <table>
       <thead>
+        <tr class="problem-title">
+          <th
+            [ngClass]="{
+              'problems-header': course_flag,
+              'problems-header2': !course_flag
+            }"
+          >
+            <ng-container>
+              <img
+                *ngIf="course_flag"
+                src="../../assets/images/math_backwards.png"
+                class="image-button"
+                routerComing
+                routerLink="/math"
+              />
+              <img
+                *ngIf="!course_flag"
+                src="../../assets/images/programming_backwards.png"
+                class="image-button"
+                routerComing
+                routerLink="/programming"
+              />
+            </ng-container>
+          </th>
+          <th
+            [ngClass]="{
+              'problems-header': course_flag,
+              'problems-header2': !course_flag
+            }"
+          >
+            {{ this.course }} problems
+          </th>
+          <th></th>
+        </tr>
         <tr class="problem-header">
           <th
             [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
+              'problems-header3': course_flag,
+              'problems-header4': !course_flag
             }"
           >
             Title
           </th>
           <th
             [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
+              'problems-header3': course_flag,
+              'problems-header4': !course_flag
             }"
           >
-            Status
+            Proglem status
           </th>
           <th
             [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
+              'problems-header3': course_flag,
+              'problems-header4': !course_flag
             }"
           >
             Solution
@@ -52,136 +70,58 @@
         </tr>
       </thead>
       <tbody>
-        <tr class="problem-body">
-          <td
-            [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
-            }"
-          >
-            Problem1
-          </td>
-          <td
-            [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
-            }"
-          >
-            Not solved
-          </td>
-          <td
-            [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
-            }"
-          >
-            Link1
-          </td>
-        </tr>
-        <tr class="problem-body">
-          <td
-            [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
-            }"
-          >
-            Problem2
-          </td>
-          <td
-            [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
-            }"
-          >
-            Not solved
-          </td>
-          <td
-            [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
-            }"
-          >
-            Link2
-          </td>
-        </tr>
-        <tr class="problem-body">
-          <td
-            [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
-            }"
-          >
-            Problem3
-          </td>
-          <td
-            [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
-            }"
-          >
-            Not solved
-          </td>
-          <td
-            [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
-            }"
-          >
-            Link3
-          </td>
-        </tr>
-        <tr class="problem-body">
-          <td
-            [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
-            }"
-          >
-            Problem4
-          </td>
-          <td
-            [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
-            }"
-          >
-            Not solved
-          </td>
-          <td
-            [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
-            }"
-          >
-            Link4
-          </td>
-        </tr>
-        <tr class="problem-body">
-          <td
-            [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
-            }"
-          >
-            Problem5
-          </td>
-          <td
-            [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
-            }"
-          >
-            Not solved
-          </td>
-          <td
-            [ngClass]="{
-              'problems-header': isFlagTrue,
-              'problems-header2': !isFlagTrue
-            }"
-          >
-            Link5
-          </td>
-        </tr>
+        <ng-container *ngFor="let i of rangeArray">
+          <tr class="problem-body">
+            <td
+              [ngClass]="{
+                'problems-name': course_flag,
+                'problems-name2': !course_flag
+              }"
+            >
+              {{ i + 1 }}. Problem
+            </td>
+            <ng-container>
+              <td
+                *ngIf="authService.loggedIn$ | async"
+                class="problems-not-solved"
+              >
+                Not solved
+              </td>
+              <td
+                *ngIf="!(authService.loggedIn$ | async)"
+                [ngClass]="{
+                  'problems-not-signed': course_flag,
+                  'problems-not-signed2': !course_flag
+                }"
+              >
+                You are currently logged out
+              </td>
+            </ng-container>
+            <td
+              [ngClass]="{
+                'problems-solution-coming': course_flag,
+                'problems-solution-coming2': !course_flag
+              }"
+            >
+              <ng-container>
+                <button class="youtube-button" (click)="openSolutionDialog()">
+                  <i
+                    *ngIf="course_flag"
+                    class="fa fa-youtube-play"
+                    style="font-size: 2.5vw; color: rgb(253, 151, 31)"
+                  ></i>
+                </button>
+                <button class="youtube-button" (click)="openSolutionDialog()">
+                  <i
+                    *ngIf="!course_flag"
+                    class="fa fa-youtube-play"
+                    style="font-size: 2.5vw; color: rgb(102, 217, 239)"
+                  ></i>
+                </button>
+              </ng-container>
+            </td>
+          </tr>
+        </ng-container>
       </tbody>
     </table>
   </div>

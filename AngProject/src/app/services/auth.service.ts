@@ -49,7 +49,8 @@ export class AuthService {
         if (this.isLocalStorageAvailable) {
           localStorage.removeItem('token');
         }
-        this.router.navigate(['/']);
+        const currentUrl = this.router.url;
+        this.router.navigate([currentUrl]);
       },
       (err) => {
         alert(err.message);

@@ -15,11 +15,13 @@ export class DialogService {
   openDialog(
     width: string = 'auto',
     height: string = 'auto',
-    component: any
+    component: any,
+    data: any = null
   ): MatDialogRef<any> {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.width = width;
     dialogConfig.height = height;
+    dialogConfig.data = data;
 
     return this.dialog.open(component, dialogConfig);
   }

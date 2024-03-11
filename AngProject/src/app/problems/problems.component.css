@@ -8,23 +8,6 @@ body {
   cursor: pointer;
 }
 
-.problems-title {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: rgb(253, 151, 31);
-  text-align: center;
-  margin-bottom: 2vh;
-  font-size: 3vw;
-}
-
-.problems-title2 {
-  color: rgb(102, 217, 239);
-  text-align: center;
-  margin-bottom: 2vh;
-  font-size: 3vw;
-}
-
 .table-wrapper {
   display: flex;
   justify-content: center;
@@ -41,6 +24,11 @@ thead {
   border-bottom-color: rgb(174, 129, 255);
 }
 
+.problem-title {
+  width: 100%;
+  height: 30vh;
+}
+
 .problem-header {
   width: 100%;
   height: 10vh;
@@ -48,12 +36,92 @@ thead {
 
 .problems-header {
   width: 33.33%;
-  font-size: 2vw;
+  font-size: 3vw;
   text-align: center;
   color: rgb(253, 151, 31);
 }
 
 .problems-header2 {
+  width: 33.33%;
+  font-size: 3vw;
+  text-align: center;
+  color: rgb(102, 217, 239);
+}
+
+.problems-header3 {
+  width: 33.33%;
+  font-size: 2vw;
+  text-align: center;
+  color: rgb(253, 151, 31);
+}
+
+.problems-header4 {
+  width: 33.33%;
+  font-size: 2vw;
+  text-align: center;
+  color: rgb(102, 217, 239);
+}
+
+.problems-name {
+  width: 33.33%;
+  font-size: 2vw;
+  text-align: center;
+  color: rgb(253, 151, 31);
+  cursor: pointer;
+}
+
+.problems-name2 {
+  width: 33.33%;
+  font-size: 2vw;
+  text-align: center;
+  color: rgb(102, 217, 239);
+  cursor: pointer;
+}
+
+.problems-name:hover {
+  color: rgb(255, 220, 100);
+}
+
+.problems-name2:hover {
+  color: rgb(170, 255, 255);
+}
+
+.problems-not-solved {
+  width: 33.33%;
+  font-size: 2vw;
+  text-align: center;
+  color: red;
+}
+
+.problems-not-signed {
+  width: 33.33%;
+  font-size: 2vw;
+  text-align: center;
+  color: rgb(253, 151, 31);
+}
+
+.problems-not-signed2 {
+  width: 33.33%;
+  font-size: 2vw;
+  text-align: center;
+  color: rgb(102, 217, 239);
+}
+
+.problems-solved {
+  width: 33.33%;
+  font-size: 2vw;
+  text-align: center;
+  color: green;
+}
+
+.problems-solution-coming {
+  width: 33.33%;
+  font-size: 2vw;
+  text-align: center;
+  color: rgb(253, 151, 31);
+}
+
+.problems-solution-coming2 {
   width: 33.33%;
   font-size: 2vw;
   text-align: center;
@@ -79,6 +147,19 @@ thead {
   font-size: 1.5vw;
   text-align: center;
   color: rgb(102, 217, 239);
+}
+
+.youtube-button {
+  border: none;
+  background: none;
+}
+
+i {
+  cursor: pointer;
+}
+
+.fa.fa-youtube-play:hover {
+  color: red !important;
 }
 
 tbody tr:nth-child(even) {
