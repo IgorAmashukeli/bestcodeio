@@ -5,7 +5,21 @@
       'problems-title2': !isFlagTrue
     }"
   >
-    {{ this.course }} problems
+    <ng-container>
+      <img
+        *ngIf="isFlagTrue"
+        src="../../assets/images/math_backwards.png"
+        class="image-button"
+        routerLink="/math"
+      />
+      <img
+        *ngIf="!isFlagTrue"
+        src="../../assets/images/programming_backwards.png"
+        class="image-button"
+        routerLink="/programming"
+      />
+    </ng-container>
+    <div class="problems-title-text">{{ this.course }} problems</div>
   </div>
   <div class="table-wrapper">
     <table>

@@ -1,6 +1,6 @@
 body {
   background-color: rgb(32, 28, 28);
-  height: 220vh;
+  height: 205vh;
 }
 
 .title {
@@ -29,6 +29,10 @@ body {
   border: solid;
   border-color: rgb(249, 38, 114);
   border-radius: 1vw;
+}
+
+.item:hover {
+  background-color: rgb(170, 255, 255);
 }
 
 .picture {
