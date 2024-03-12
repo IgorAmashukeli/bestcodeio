@@ -6,6 +6,9 @@ import { AuthService } from '../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { SignInDialogComponent } from '../sign_in_dialog/sign_in_dialog.component';
 import { WarningDialogComponent } from '../warning_dialog/warning_dialog.component';
+import { Auth, authState, User } from '@angular/fire/auth';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import firebase from 'firebase/app';
 
 @Component({
   selector: 'app-navigation_bar',
@@ -15,8 +18,26 @@ import { WarningDialogComponent } from '../warning_dialog/warning_dialog.compone
   imports: [MatToolbar, RouterLink, RouterLinkActive, CommonModule],
 })
 export class NavigationBarComponent {
-  constructor(private dialogService: DialogService, public auth: AuthService) {
-    //console.log(auth.isLoggedIn());
+  user_value: User | null = null;
+  photo_url: string | null | undefined = '';
+  is_photo: boolean = false;
+  constructor(
+    private dialogService: DialogService,
+    public authService: AuthService,
+    private auth: Auth
+  ) {}
+
+  ngOnInit() {
+    this.auth.onAuthStateChanged((user) => {
+      if (user) {
+        this.photo_url = user.photoURL;
+        this.is_photo = true;
+        console.log(this.photo_url);
+      } else {
+        this.photo_url = '';
+        this.is_photo = false;
+      }
+    });
   }
 
   openSignInDialogButtonClick() {

@@ -1,0 +1,7 @@
+::ng-deep .as-split-gutter-icon {
+  background-color: black !important;
+}
+
+::ng-deep .as-split-gutter-icon:hover {
+  background-color: rgb(20, 136, 244) !important;
+}

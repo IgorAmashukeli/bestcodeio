@@ -38,7 +38,7 @@
               'problems-header2': !course_flag
             }"
           >
-            {{ this.course }} problems
+            {{ this.course_title }} problems
           </th>
           <th></th>
         </tr>
@@ -70,15 +70,16 @@
         </tr>
       </thead>
       <tbody>
-        <ng-container *ngFor="let i of rangeArray">
+        <ng-container *ngFor="let name of nameArray; let i = index">
           <tr class="problem-body">
             <td
               [ngClass]="{
                 'problems-name': course_flag,
                 'problems-name2': !course_flag
               }"
+              routerLink="{{ this.router.url }}/{{ i }}"
             >
-              {{ i + 1 }}. Problem
+              {{ i + 1 }}. {{ name }}
             </td>
             <ng-container>
               <td

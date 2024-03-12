@@ -6,6 +6,7 @@ import { ProblemsComponent } from './problems/problems.component';
 import { AuthGuard } from './services/auth_guard.service';
 import { inject } from '@angular/core';
 import { WarningDialogComponent } from './warning_dialog/warning_dialog.component';
+import { ProblemComponent } from './problem/problem.component';
 
 const routesSimple: Routes = [
   { path: '', component: HomeComponent },
@@ -109,8 +110,93 @@ const routes_with_math_and_programming =
   routes_with_math.concat(programmingRoutes);
 
 routes_with_math_and_programming.push({
+  path: 'math/:param1/:param2',
+  component: ProblemComponent,
+});
+routes_with_math_and_programming.push({
+  path: 'programming/:param1/:param2',
+  component: ProblemComponent,
+});
+
+routes_with_math_and_programming.push({
   path: '**',
   redirectTo: '/',
 });
 
 export const routes = routes_with_math_and_programming;
+
+export const math_indices: { [key: string]: number } = {
+  logic: 0,
+  set: 1,
+  combinatorics: 2,
+  graph: 3,
+  algebra: 4,
+  computation: 5,
+  linear: 6,
+  calculus: 7,
+  complex: 8,
+  probability: 9,
+  topology: 10,
+  functionalAn: 11,
+  differential: 12,
+  algtop: 13,
+  number: 14,
+  category: 15,
+};
+
+export const programming_indices: { [key: string]: number } = {
+  hardware: 0,
+  compiler: 1,
+  dsa: 2,
+  streaming: 3,
+  external: 4,
+  operating: 5,
+  concurrency: 6,
+  functionalProg: 7,
+  distributed: 8,
+  networking: 9,
+  databases: 10,
+  security: 11,
+  system: 12,
+  manAn: 13,
+  ml: 14,
+  quantum: 15,
+};
+
+export const math_problems: Array<Array<string>> = [
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+];
+
+export const programming_problems: Array<Array<string>> = [
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+  ['problem1', 'problem2', 'problem3', 'problem4', 'problem5'],
+];
