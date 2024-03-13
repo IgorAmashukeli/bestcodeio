@@ -22,7 +22,7 @@ mat-toolbar {
 }
 
 .small-menu {
-  font-size: 3vh;
+  font-size: 2vw;
   color: white;
   cursor: pointer;
 }
@@ -34,14 +34,14 @@ mat-toolbar {
 
 .selected-small-menu {
   text-decoration: underline;
-  font-size: 3vh;
+  font-size: 2vw;
   cursor: pointer;
   color: white;
 }
 
 .run-button {
-  height: 6vh;
-  font-size: 3vh;
+  width: 8vw;
+  font-size: 1.5vw;
   padding: 1vh 2vw;
   font-weight: bolder;
   background-color: white;
@@ -55,8 +55,8 @@ mat-toolbar {
 }
 
 .submit-button {
-  height: 6vh;
-  font-size: 3vh;
+  width: 8vw;
+  font-size: 1.2vw;
   padding: 1vh 2vw;
   font-weight: bolder;
   background-color: green;
@@ -70,11 +70,9 @@ mat-toolbar {
 }
 
 .selector-class {
-  width: 15vw;
+  width: 8vw;
   border-radius: 1vb;
   border: none;
   background-color: black;
   color: white;
-  max-width: 6vw;
-  max-height: 5vh;
 }

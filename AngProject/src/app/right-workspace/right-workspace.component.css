@@ -16,3 +16,33 @@ body {
   > .as-split-gutter[_ngcontent-ng-c4106337314]:hover {
   background-color: rgb(20, 136, 244) !important;
 }
+
+.case-button {
+  width: 8vw;
+  font-size: 1vw;
+  padding: 1vh 2vw;
+  font-weight: bolder;
+  background-color: rgb(50, 45, 45);
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 1vw;
+  border: none;
+  cursor: pointer;
+  transition-duration: 0.4s;
+}
+
+.case-button-selected {
+  width: 8vw;
+  font-size: 1vw;
+  padding: 1vh 2vw;
+  font-weight: bolder;
+  background-color: rgb(150, 145, 145);
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 1vw;
+  border: none;
+  cursor: pointer;
+  transition-duration: 0.4s;
+}

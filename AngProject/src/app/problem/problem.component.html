@@ -34,11 +34,12 @@
         name="language"
         style="height: 6vh; font-size: 3vh"
         class="selector-class"
+        [(ngModel)]="selectedLanguage"
       >
         <ng-container
           *ngFor="let element of this.language_array; let i = index"
         >
-          <option value="{{ element }}">{{ element }}</option>
+          <option value="{{ element[1] }}">{{ element[0] }}</option>
         </ng-container>
       </select>
     </div>
@@ -59,7 +60,13 @@
     <left-workspace [selectedNavItem]="selectedNavItem"></left-workspace>
   </as-split-area>
   <as-split-area size="50">
-    <right-workspace></right-workspace>
+    <right-workspace
+      [selectedLanguage]="selectedLanguage"
+      [code_languages]="this.language_array"
+      [initial_codes]="this.initial_codes"
+      [initial_language]="this.initial_language"
+      [example_array]="this.example_array"
+    ></right-workspace>
   </as-split-area>
 </as-split>
 <div style="height: 2vh; background-color: rgb(68, 68, 68)"></div>

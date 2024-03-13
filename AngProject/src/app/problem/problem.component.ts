@@ -16,6 +16,7 @@ import {
   programming_problems,
 } from '../problem_list/problem_list';
 import { Problem } from '../problem_list/problem_list';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-problem',
@@ -33,6 +34,7 @@ import { Problem } from '../problem_list/problem_list';
     CommonModule,
     DescriptionComponent,
     SubmissionsComponent,
+    FormsModule,
   ],
 })
 export class ProblemComponent {
@@ -42,7 +44,11 @@ export class ProblemComponent {
 
   selectedNavItem: string = 'description_page';
   parent_route: string = '';
-  language_array: Array<string> = [];
+  language_array: Array<Array<string>> = [];
+  selectedLanguage: string = 'cpp';
+  initial_codes: any = {};
+  initial_language: string = '';
+  example_array: Array<string> = [];
 
   assign_fields(
     course_route: string,
@@ -53,6 +59,9 @@ export class ProblemComponent {
     this.course_id = indices[course_route];
     const problem = problems[this.course_id][problem_id];
     this.language_array = problem['languages'];
+    this.initial_codes = problem['initial_codes'];
+    this.initial_language = problem['initial_language'];
+    this.example_array = problem['examples'];
   }
 
   constructor(private router: Router) {

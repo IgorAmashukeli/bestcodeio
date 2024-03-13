@@ -10,20 +10,135 @@
         "
       >
         <ngx-monaco-editor
-          [options]="editorOptions"
-          [(ngModel)]="code"
+          style="height: 100%"
+          [options]="{ theme: 'vs-dark', language: this.selectedLanguage }"
+          [(ngModel)]="cur_code"
         ></ngx-monaco-editor>
       </div>
     </as-split-area>
     <as-split-area size="25">
-      <div
-        style="
-          border-right: solid;
-          border-width: 2vh;
-          border-color: rgb(68, 68, 68);
-          height: 100vh;
-        "
-      ></div>
+      <ng-container>
+        <div
+          *ngIf="this.example_array.length > 0"
+          style="
+            border-right: solid;
+            border-width: 2vh;
+            border-color: rgb(68, 68, 68);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+          "
+        >
+          <div
+            style="
+              text-align: left;
+              color: white;
+              font-size: 1.5vw;
+              margin-left: 2vw;
+            "
+          >
+            Testcases
+          </div>
+          <div
+            *ngIf="this.example_array.length > 0"
+            style="
+              margin-top: 3vh;
+              margin-left: 2vw;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              height: 4vh;
+            "
+          >
+            <ng-container
+              *ngFor="let value of this.example_array; let i = index"
+            >
+              <div [style.width.%]="100 / example_array.length">
+                <button
+                  [ngClass]="{
+                    'case-button': this.selectedCase !== i,
+                    'case-button-selected': this.selectedCase == i
+                  }"
+                  (click)="changeSelectedCase(i)"
+                >
+                  Case {{ i + 1 }}
+                </button>
+              </div>
+            </ng-container>
+          </div>
+          <div
+            style="
+              color: white;
+              font-weight: bold;
+              font-size: 1vw;
+              margin-top: 4vh;
+              margin-left: 2vw;
+            "
+          >
+            Input:
+          </div>
+          <span
+            style="
+              color: white;
+              font-weight: bold;
+              font-size: 1vw;
+              margin-top: 4vh;
+              margin-left: 2vw;
+              background-color: rgb(50, 45, 45);
+            "
+          >
+            {{ parseInputOutput(this.example_array[this.selectedCase])["inp"] }}
+          </span>
+          <div
+            style="
+              color: white;
+              font-weight: bold;
+              font-size: 1vw;
+              margin-top: 4vh;
+              margin-left: 2vw;
+            "
+          >
+            Output:
+          </div>
+          <div></div>
+          <div
+            style="
+              color: white;
+              font-weight: bold;
+              font-size: 1vw;
+              margin-top: 4vh;
+              margin-left: 2vw;
+            "
+          >
+            Expected:
+          </div>
+          <span
+            style="
+              color: white;
+              font-weight: bold;
+              font-size: 1vw;
+              margin-top: 4vh;
+              margin-left: 2vw;
+              background-color: rgb(50, 45, 45);
+            "
+          >
+            {{
+              parseInputOutput(this.example_array[this.selectedCase])["outp"]
+            }}
+          </span>
+        </div>
+        <div
+          *ngIf="this.example_array.length == 0"
+          style="
+            border-right: solid;
+            border-width: 2vh;
+            border-color: rgb(68, 68, 68);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+          "
+        ></div>
+      </ng-container>
     </as-split-area>
   </as-split>
 </body>
