@@ -8,24 +8,25 @@ import { AuthService } from '../services/auth.service';
 import {
   math_problems,
   programming_problems,
-  math_indices,
-  programming_indices,
-} from '../app.routes';
+} from '../problem_list/problem_list';
+
+import { math_indices, programming_indices } from '../app.routes';
+import { Problem } from '../problem_list/problem_list';
+import { NavigationBarComponent } from '../navigation_bar/navigation_bar.component';
 
 @Component({
   selector: 'problems',
   standalone: true,
   templateUrl: './problems.component.html',
   styleUrls: ['./problems.component.css'],
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, NavigationBarComponent],
 })
 export class ProblemsComponent implements OnInit {
   course_title: string = '';
   course_type: string = '';
   course_id: number = -1;
   course_flag: boolean = true;
-  size: number = 5;
-  nameArray: string[] = [];
+  problemArray: Problem[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -41,10 +42,10 @@ export class ProblemsComponent implements OnInit {
     this.course_title = this.route.snapshot.data['title'];
     if (this.course_flag) {
       this.course_id = math_indices[course_route];
-      this.nameArray = math_problems[this.course_id];
+      this.problemArray = math_problems[this.course_id];
     } else {
       this.course_id = programming_indices[course_route];
-      this.nameArray = programming_problems[this.course_id];
+      this.problemArray = programming_problems[this.course_id];
     }
   }
 

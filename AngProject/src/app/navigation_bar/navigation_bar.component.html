@@ -13,7 +13,7 @@
         <img
           (click)="openSignInDialogButtonClick()"
           [src]="this.photo_url"
-          alt="Profile Picture"
+          onerror="this.onerror=null;this.src='../../assets/images/no_profile.png';"
           class="picture"
         />
       </div>

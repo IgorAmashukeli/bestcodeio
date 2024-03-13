@@ -1,0 +1,26 @@
+<body>
+  <div class="submissions-title">Your submissions</div>
+  <table
+    style="width: 80%; margin-left: 10%; margin-right: 10%; margin-top: 4vh"
+  >
+    <thead>
+      <tr style="color: white; font-size: 2vh">
+        <th style="width: 25%">Status</th>
+        <th style="width: 25%">Language</th>
+        <th style="width: 25%">Runtime</th>
+        <th style="width: 25%">Memory</th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let value of this.submissions_array; let i = index">
+        <tr style="color: white; font-size: 2vh">
+          <td style="width: 25%">{{ value["status"] }}</td>
+          <td style="width: 25%">{{ value["language"] }}</td>
+          <td style="width: 25%">{{ value["runtime"] }}</td>
+          <td style="width: 25%">{{ value["memory"] }}</td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+  <div style="height: 100vh"></div>
+</body>

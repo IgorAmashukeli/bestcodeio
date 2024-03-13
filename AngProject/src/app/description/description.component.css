@@ -1,4 +1,86 @@
 body {
   background-color: rgb(32, 28, 28);
+  height: 150vh;
+}
+
+.component-body {
+  margin: 1.5vw;
+}
+
+.description-problem-name {
+  text-align: left;
   color: white;
+  font-size: 4vh;
+}
+
+.description-body {
+  margin-top: 2vh;
+  font-size: 2vh;
+  color: white;
+}
+
+.examples-body {
+  margin-top: 8vh;
+  color: white;
+}
+
+.example-title {
+  font-size: 2vh;
+  font-weight: bold;
+}
+
+.example-body {
+  font-size: 2.25vh;
+  margin-top: 2vh;
+  background-color: rgb(50, 45, 45);
+  margin-bottom: 1vh;
+}
+
+.constraints-body {
+  margin-top: 8vh;
+  color: white;
+}
+
+.constraint-body {
+  margin-top: 2vh;
+}
+
+.constraints-title {
+  font-size: 2vh;
+  color: white;
+  font-weight: bold;
+}
+
+.note-body {
+  margin-top: 8vh;
+  color: white;
+}
+
+.statistics-body {
+  color: white;
+}
+
+.problems-easy {
+  text-align: left;
+  font-size: 1.2vw;
+  color: green;
+}
+
+.problems-medium {
+  text-align: left;
+  font-size: 1.2vw;
+  color: rgb(253, 151, 31);
+}
+
+.problems-hard {
+  text-align: left;
+  font-size: 1.2vw;
+  color: red;
+}
+
+.statistics-body {
+  margin-top: 10vh;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
 }

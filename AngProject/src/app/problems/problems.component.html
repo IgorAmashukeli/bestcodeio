@@ -4,82 +4,40 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
   />
 </head>
+<app-navigation_bar></app-navigation_bar>
 <body>
   <div class="table-wrapper">
     <table>
       <thead>
         <tr class="problem-title">
-          <th
-            [ngClass]="{
-              'problems-header': course_flag,
-              'problems-header2': !course_flag
-            }"
-          >
-            <ng-container>
-              <img
-                *ngIf="course_flag"
-                src="../../assets/images/math_backwards.png"
-                class="image-button"
-                routerComing
-                routerLink="/math"
-              />
-              <img
-                *ngIf="!course_flag"
-                src="../../assets/images/programming_backwards.png"
-                class="image-button"
-                routerComing
-                routerLink="/programming"
-              />
-            </ng-container>
+          <th class="problems-header">
+            <img
+              src="../../assets/images/problem_backwards.png"
+              class="image-button"
+              routerComing
+              routerLink="/math"
+            />
           </th>
-          <th
-            [ngClass]="{
-              'problems-header': course_flag,
-              'problems-header2': !course_flag
-            }"
-          >
+          <th colspan="2" class="problems-header">
             {{ this.course_title }} problems
           </th>
           <th></th>
         </tr>
         <tr class="problem-header">
-          <th
-            [ngClass]="{
-              'problems-header3': course_flag,
-              'problems-header4': !course_flag
-            }"
-          >
-            Title
-          </th>
-          <th
-            [ngClass]="{
-              'problems-header3': course_flag,
-              'problems-header4': !course_flag
-            }"
-          >
-            Proglem status
-          </th>
-          <th
-            [ngClass]="{
-              'problems-header3': course_flag,
-              'problems-header4': !course_flag
-            }"
-          >
-            Solution
-          </th>
+          <th class="problems-header3">Title</th>
+          <th class="problems-header3">Problem status</th>
+          <th class="problems-header3">Difficulty</th>
+          <th class="problems-header3">Solution</th>
         </tr>
       </thead>
       <tbody>
-        <ng-container *ngFor="let name of nameArray; let i = index">
+        <ng-container *ngFor="let value of problemArray; let i = index">
           <tr class="problem-body">
             <td
-              [ngClass]="{
-                'problems-name': course_flag,
-                'problems-name2': !course_flag
-              }"
+              class="problems-name"
               routerLink="{{ this.router.url }}/{{ i }}"
             >
-              {{ i + 1 }}. {{ name }}
+              {{ i + 1 }}. {{ value["title"] }}
             </td>
             <ng-container>
               <td
@@ -90,36 +48,30 @@
               </td>
               <td
                 *ngIf="!(authService.loggedIn$ | async)"
-                [ngClass]="{
-                  'problems-not-signed': course_flag,
-                  'problems-not-signed2': !course_flag
-                }"
+                class="problems-not-signed"
               >
                 You are currently logged out
               </td>
             </ng-container>
             <td
               [ngClass]="{
-                'problems-solution-coming': course_flag,
-                'problems-solution-coming2': !course_flag
+                'problems-easy': value['difficulty'] == 'Easy',
+                'problems-medium': value['difficulty'] == 'Medium',
+                'problems-hard': value['difficulty'] == 'Hard'
               }"
             >
-              <ng-container>
-                <button class="youtube-button" (click)="openSolutionDialog()">
-                  <i
-                    *ngIf="course_flag"
-                    class="fa fa-youtube-play"
-                    style="font-size: 2.5vw; color: rgb(253, 151, 31)"
-                  ></i>
-                </button>
-                <button class="youtube-button" (click)="openSolutionDialog()">
-                  <i
-                    *ngIf="!course_flag"
-                    class="fa fa-youtube-play"
-                    style="font-size: 2.5vw; color: rgb(102, 217, 239)"
-                  ></i>
-                </button>
-              </ng-container>
+              {{ value["difficulty"] }}
+            </td>
+            <td class="problems-solution-coming">
+              <button
+                class="youtube-button"
+                (click)="openSolutionDialog(value['video_id'])"
+              >
+                <i
+                  class="fa fa-youtube-play"
+                  style="font-size: 2.5vw; color: white"
+                ></i>
+              </button>
             </td>
           </tr>
         </ng-container>

@@ -7,12 +7,14 @@ import { NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { VariablesService } from '../services/variables.service';
 import { MatDialogRef } from '@angular/material/dialog';
+import { NavigationBarComponent } from '../navigation_bar/navigation_bar.component';
 
 @Component({
   selector: 'home',
   standalone: true,
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
+  imports: [NavigationBarComponent],
 })
 export class HomeComponent {
   currentRoute: string = '';

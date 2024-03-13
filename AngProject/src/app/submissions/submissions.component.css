@@ -1,0 +1,9 @@
+body {
+  background-color: rgb(32, 28, 28);
+}
+
+.submissions-title {
+  color: white;
+  text-align: center;
+  font-size: 3vh;
+}

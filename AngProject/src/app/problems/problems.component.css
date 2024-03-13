@@ -35,46 +35,24 @@ thead {
 }
 
 .problems-header {
-  width: 33.33%;
+  width: 25%;
   font-size: 3vw;
   text-align: center;
-  color: rgb(253, 151, 31);
-}
-
-.problems-header2 {
-  width: 33.33%;
-  font-size: 3vw;
-  text-align: center;
-  color: rgb(102, 217, 239);
+  color: white;
 }
 
 .problems-header3 {
-  width: 33.33%;
+  width: 25%;
   font-size: 2vw;
   text-align: center;
-  color: rgb(253, 151, 31);
-}
-
-.problems-header4 {
-  width: 33.33%;
-  font-size: 2vw;
-  text-align: center;
-  color: rgb(102, 217, 239);
+  color: white;
 }
 
 .problems-name {
-  width: 33.33%;
+  width: 25%;
   font-size: 2vw;
   text-align: center;
-  color: rgb(253, 151, 31);
-  cursor: pointer;
-}
-
-.problems-name2 {
-  width: 33.33%;
-  font-size: 2vw;
-  text-align: center;
-  color: rgb(102, 217, 239);
+  color: white;
   cursor: pointer;
 }
 
@@ -87,45 +65,52 @@ thead {
 }
 
 .problems-not-solved {
-  width: 33.33%;
+  width: 25%;
   font-size: 2vw;
   text-align: center;
   color: red;
 }
 
 .problems-not-signed {
-  width: 33.33%;
+  width: 25%;
   font-size: 2vw;
   text-align: center;
-  color: rgb(253, 151, 31);
-}
-
-.problems-not-signed2 {
-  width: 33.33%;
-  font-size: 2vw;
-  text-align: center;
-  color: rgb(102, 217, 239);
+  color: white;
 }
 
 .problems-solved {
-  width: 33.33%;
+  width: 25%;
   font-size: 2vw;
   text-align: center;
   color: green;
 }
 
-.problems-solution-coming {
-  width: 33.33%;
+.problems-easy {
+  width: 25%;
+  font-size: 2vw;
+  text-align: center;
+  color: green;
+}
+
+.problems-medium {
+  width: 25%;
   font-size: 2vw;
   text-align: center;
   color: rgb(253, 151, 31);
 }
 
-.problems-solution-coming2 {
-  width: 33.33%;
+.problems-hard {
+  width: 25%;
   font-size: 2vw;
   text-align: center;
-  color: rgb(102, 217, 239);
+  color: red;
+}
+
+.problems-solution-coming {
+  width: 25%;
+  font-size: 2vw;
+  text-align: center;
+  color: white;
 }
 
 .problem-body {
@@ -139,14 +124,7 @@ thead {
   width: 33.33%;
   font-size: 1.5vw;
   text-align: center;
-  color: rgb(253, 151, 31);
-}
-
-.problems-body2 {
-  width: 33.33%;
-  font-size: 1.5vw;
-  text-align: center;
-  color: rgb(102, 217, 239);
+  color: white;
 }
 
 .youtube-button {

@@ -1,0 +1,18 @@
+body {
+  background-color: rgb(32, 28, 28);
+}
+
+::ng-deep
+  .as-vertical[_nghost-ng-c4106337314]
+  > .as-split-gutter[_ngcontent-ng-c4106337314] {
+  width: 100%;
+  height: 1vh;
+  background-color: rgb(68, 68, 68) !important;
+  background-size: 100% 0.35vh !important;
+}
+
+::ng-deep
+  .as-vertical[_nghost-ng-c4106337314]
+  > .as-split-gutter[_ngcontent-ng-c4106337314]:hover {
+  background-color: rgb(20, 136, 244) !important;
+}

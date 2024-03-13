@@ -1,8 +1,65 @@
-<as-split direction="horizontal" gutterSize="10">
+<app-navigation_bar></app-navigation_bar>
+<mat-toolbar
+  style="border-bottom: solid; border-color: rgb(68, 68, 68); border-width: 2vh"
+>
+  <div style="display: flex; height: 100%; width: 100%; margin-left: 1%">
+    <div style="width: 13.66667%; display: flex; align-items: center">
+      <img
+        class="picture-menu"
+        routerLink="{{ this.parent_route }}"
+        src="../../assets/images/problem_backwards.png"
+      />
+    </div>
+    <div
+      style="width: 20.66667%; display: flex; align-items: center"
+      class="small-menu"
+      [class.selected-small-menu]="selectedNavItem === 'description_page'"
+      (click)="selectNavItem('description_page')"
+    >
+      Description
+    </div>
+    <div
+      style="width: 16.66667%; display: flex; align-items: center"
+      class="small-menu"
+      [class.selected-small-menu]="selectedNavItem === 'submissions_page'"
+      (click)="selectNavItem('submissions_page')"
+    >
+      Submissions
+    </div>
+    <div
+      style="width: 16.66667%; height: 8vh; display: flex; align-items: center"
+    >
+      <select
+        id="language"
+        name="language"
+        style="height: 6vh; font-size: 3vh"
+        class="selector-class"
+      >
+        <ng-container
+          *ngFor="let element of this.language_array; let i = index"
+        >
+          <option value="{{ element }}">{{ element }}</option>
+        </ng-container>
+      </select>
+    </div>
+    <div
+      style="width: 16.66667%; height: 8vh; display: flex; align-items: center"
+    >
+      <button class="run-button">Run</button>
+    </div>
+    <div
+      style="width: 16.66667%; height: 8vh; display: flex; align-items: center"
+    >
+      <button class="submit-button">Submit</button>
+    </div>
+  </div>
+</mat-toolbar>
+<as-split style="height: 78vh" direction="horizontal" gutterSize="0">
   <as-split-area size="50">
-    <description></description>
+    <left-workspace [selectedNavItem]="selectedNavItem"></left-workspace>
   </as-split-area>
   <as-split-area size="50">
-    <editor></editor>
+    <right-workspace></right-workspace>
   </as-split-area>
 </as-split>
+<div style="height: 2vh; background-color: rgb(68, 68, 68)"></div>
