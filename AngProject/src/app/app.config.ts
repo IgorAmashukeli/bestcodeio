@@ -12,6 +12,7 @@ import {
   provideFirebaseApp,
 } from '@angular/fire/app';
 import { getAuth as getAuth_alias, provideAuth } from '@angular/fire/auth';
+import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -20,7 +21,8 @@ export const appConfig: ApplicationConfig = {
 
     importProvidersFrom(
       provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
-      provideAuth(() => getAuth())
+      provideAuth(() => getAuth()),
+      MonacoEditorModule.forRoot()
     ),
   ],
 };
