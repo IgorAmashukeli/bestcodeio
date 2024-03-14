@@ -1,4 +1,6 @@
 import {
+  AfterContentChecked,
+  AfterContentInit,
   AfterViewInit,
   Component,
   ElementRef,
@@ -44,7 +46,7 @@ import { FormsModule } from '@angular/forms';
     FormsModule,
   ],
 })
-export class ProblemComponent implements AfterViewInit {
+export class ProblemComponent implements AfterContentChecked {
   @ViewChild('navigationBar', { static: true }) navigationBar!: ElementRef;
   @ViewChild('toolbar', { static: true }) toolbar!: ElementRef;
 
@@ -114,7 +116,7 @@ export class ProblemComponent implements AfterViewInit {
     this.parent_route = this.router.url.split('/').slice(0, -1).join('/');
   }
 
-  ngAfterViewInit() {
+  ngAfterContentChecked() {
     const navigationBarHeight = this.navigationBar.nativeElement.offsetHeight;
     const toolbarHeight = this.toolbar.nativeElement.offsetHeight;
     if (typeof window !== 'undefined') {
