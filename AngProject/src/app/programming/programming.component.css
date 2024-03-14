@@ -1,13 +1,16 @@
-body {
-  background-color: rgb(32, 28, 28);
-  height: 205vh;
+.main-body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background-color: #201c1c;
+  background-size: cover;
 }
 
 .title {
   color: rgb(102, 217, 239);
   text-align: center;
-  margin-bottom: 2vh;
-  font-size: 3vw;
+  margin-bottom: 10px;
+  font-size: 5rem;
 }
 
 .container {
@@ -16,19 +19,22 @@ body {
   justify-content: center;
 }
 .item {
-  width: 20vw;
-  height: 30vh;
-  margin: 0.5vw;
+  margin-top: 20px;
+  margin-left: 5px;
+  margin-right: 5px;
+  width: 280px;
+  height: 230px;
   background-color: rgb(102, 217, 239);
   color: rgb(32, 28, 28);
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  font-size: 1.3vw;
+  font-size: 23px;
   border: solid;
   border-color: rgb(249, 38, 114);
-  border-radius: 1vw;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 .item:hover {
@@ -36,8 +42,8 @@ body {
 }
 
 .picture {
-  max-width: 20vw;
-  max-height: 15vh;
+  max-width: 200px;
+  max-height: 150px;
   width: auto;
   height: auto;
   object-fit: contain;

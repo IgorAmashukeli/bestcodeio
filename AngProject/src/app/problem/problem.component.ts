@@ -1,4 +1,11 @@
-import { AfterViewInit, Component, ElementRef, Renderer2 } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  Renderer2,
+  ViewChild,
+} from '@angular/core';
 import { AngularSplitModule } from 'angular-split';
 import { LeftWorkspaceComponent } from '../left-workspace/left-workspace.component';
 import { RightWorkSpaceComponent } from '../right-workspace/right-workspace.component';
@@ -38,6 +45,9 @@ import { FormsModule } from '@angular/forms';
   ],
 })
 export class ProblemComponent {
+  @ViewChild('navigationBar', { static: true }) navigationBar!: ElementRef;
+  @ViewChild('toolbar', { static: true }) toolbar!: ElementRef;
+
   course_type: string = '';
   course_id: number = -1;
   course_flag: boolean = true;
@@ -49,6 +59,8 @@ export class ProblemComponent {
   initial_codes: any = {};
   initial_language: string = '';
   example_array: Array<string> = [];
+  window_object: any;
+  splitHeight: string = '0px';
 
   assign_fields(
     course_route: string,
@@ -81,10 +93,33 @@ export class ProblemComponent {
         programming_problems
       );
     }
+    if (typeof window !== 'undefined') {
+      this.window_object = window;
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    // Recalculate the height here
+    // You can use this code to adjust the height dynamically:
+    const navigationBarHeight = this.navigationBar.nativeElement.offsetHeight;
+    const toolbarHeight = this.toolbar.nativeElement.offsetHeight;
+    if (typeof window !== 'undefined') {
+      this.splitHeight =
+        window.innerHeight - 20 - (navigationBarHeight + toolbarHeight) + 'px';
+    }
   }
 
   ngOnInit() {
     this.parent_route = this.router.url.split('/').slice(0, -1).join('/');
+
+    // Initialize splitHeight property
+    const navigationBarHeight = this.navigationBar.nativeElement.offsetHeight;
+    const toolbarHeight = this.toolbar.nativeElement.offsetHeight;
+    if (typeof window !== 'undefined') {
+      this.splitHeight =
+        window.innerHeight - 20 - (navigationBarHeight + toolbarHeight) + 'px';
+    }
   }
 
   selectNavItem(item: string) {

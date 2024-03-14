@@ -1,4 +1,4 @@
-<body>
+<div class="description-component-body">
   <div class="component-body">
     <div class="description-problem-name">
       {{ this.problem_name }}
@@ -41,15 +41,15 @@
         </div>
       </ng-container>
     </div>
-    <div style="font-size: 2vh" class="note-body" [innerHTML]="note"></div>
+    <div style="font-size: 20px" class="note-body" [innerHTML]="note"></div>
     <div class="statistics-body">
-      <div style="font-size: 3vh">Accepted: {{ this.accepted }}</div>
-      <div style="font-size: 3vh">|</div>
-      <div style="font-size: 3vh">Submissions: {{ this.submitted }}</div>
-      <div style="font-size: 3vh">|</div>
-      <div style="font-size: 3vh">
+      <div style="font-size: 30px">Accepted: {{ this.accepted }}</div>
+      <div style="font-size: 30px">|</div>
+      <div style="font-size: 30px">Submissions: {{ this.submitted }}</div>
+      <div style="font-size: 30px">|</div>
+      <div style="font-size: 30px">
         Acceptance rate: {{ this.acceptance_rate }}%
       </div>
     </div>
   </div>
-</body>
+</div>
