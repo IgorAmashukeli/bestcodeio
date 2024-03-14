@@ -44,7 +44,7 @@ import { FormsModule } from '@angular/forms';
     FormsModule,
   ],
 })
-export class ProblemComponent {
+export class ProblemComponent implements AfterViewInit {
   @ViewChild('navigationBar', { static: true }) navigationBar!: ElementRef;
   @ViewChild('toolbar', { static: true }) toolbar!: ElementRef;
 
@@ -112,8 +112,9 @@ export class ProblemComponent {
 
   ngOnInit() {
     this.parent_route = this.router.url.split('/').slice(0, -1).join('/');
+  }
 
-    // Initialize splitHeight property
+  ngAfterViewInit() {
     const navigationBarHeight = this.navigationBar.nativeElement.offsetHeight;
     const toolbarHeight = this.toolbar.nativeElement.offsetHeight;
     if (typeof window !== 'undefined') {

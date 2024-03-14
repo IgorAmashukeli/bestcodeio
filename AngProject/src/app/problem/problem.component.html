@@ -56,22 +56,28 @@
     </div>
   </mat-toolbar>
 </div>
-<as-split
+<div
   [style.height]="this.splitHeight"
-  direction="horizontal"
-  gutterSize="0"
+  style="
+    border-left: solid;
+    border-color: rgb(68, 68, 68);
+    border-width: 20px;
+    height: auto;
+  "
 >
-  <as-split-area size="50">
-    <left-workspace [selectedNavItem]="selectedNavItem"></left-workspace>
-  </as-split-area>
-  <as-split-area size="50">
-    <right-workspace
-      [selectedLanguage]="selectedLanguage"
-      [code_languages]="this.language_array"
-      [initial_codes]="this.initial_codes"
-      [initial_language]="this.initial_language"
-      [example_array]="this.example_array"
-    ></right-workspace>
-  </as-split-area>
-</as-split>
-<div style="background-color: rgb(68, 68, 68); height: 20px"></div>
+  <as-split direction="horizontal" gutterSize="0">
+    <as-split-area size="50">
+      <left-workspace [selectedNavItem]="selectedNavItem"></left-workspace>
+    </as-split-area>
+    <as-split-area size="50">
+      <right-workspace
+        [selectedLanguage]="selectedLanguage"
+        [code_languages]="this.language_array"
+        [initial_codes]="this.initial_codes"
+        [initial_language]="this.initial_language"
+        [example_array]="this.example_array"
+      ></right-workspace>
+    </as-split-area>
+  </as-split>
+</div>
+<div style="height: 20px; background-color: rgb(68, 68, 68)"></div>

@@ -1,31 +1,33 @@
-<div class="right-workspace-body">
-  <as-split direction="vertical" [gutterSize]="15">
+<div class="right-workspace-body" style="height: 100%">
+  <as-split direction="vertical" [gutterSize]="15" style="height: 100%">
     <as-split-area size="75">
       <div
         style="
           border-right: solid;
           border-width: 20px;
           border-color: rgb(68, 68, 68);
+          height: 100%;
         "
       >
         <ngx-monaco-editor
-          style="height: 300px"
+          style="height: 100%"
           [options]="{ theme: 'vs-dark', language: this.selectedLanguage }"
           [(ngModel)]="cur_code"
         ></ngx-monaco-editor>
       </div>
     </as-split-area>
-    <as-split-area size="25">
+    <as-split-area
+      size="25"
+      style="
+        border-right: solid;
+        border-width: 20px;
+        border-color: rgb(68, 68, 68);
+      "
+    >
       <ng-container>
         <div
           *ngIf="this.example_array.length > 0"
-          style="
-            border-right: solid;
-            border-width: 20px;
-            border-color: rgb(68, 68, 68);
-            display: flex;
-            flex-direction: column;
-          "
+          style="display: flex; flex-direction: column"
         >
           <div
             style="
@@ -124,13 +126,7 @@
         </div>
         <div
           *ngIf="this.example_array.length == 0"
-          style="
-            border-right: solid;
-            border-width: 20px;
-            border-color: rgb(68, 68, 68);
-            display: flex;
-            flex-direction: column;
-          "
+          style="display: flex; flex-direction: column"
         ></div>
       </ng-container>
     </as-split-area>
