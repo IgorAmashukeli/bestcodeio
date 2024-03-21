@@ -75,6 +75,7 @@ export class ProblemComponent implements AfterContentChecked {
     this.language_array = problem['languages'];
     this.initial_codes = problem['initial_codes'];
     this.initial_language = problem['initial_language'];
+    this.selectedLanguage = this.initial_language;
     this.example_array = problem['examples'];
   }
 

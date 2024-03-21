@@ -10,6 +10,7 @@ import { AngularSplitModule } from 'angular-split';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { MonacoService } from '../services/monaco.service';
 
 @Component({
   selector: 'right-workspace',

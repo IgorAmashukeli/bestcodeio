@@ -11,7 +11,11 @@
       >
         <ngx-monaco-editor
           style="height: 100%"
-          [options]="{ theme: 'vs-dark', language: this.selectedLanguage }"
+          [options]="{
+            ambiguousCharacters: false,
+            language: this.selectedLanguage,
+            
+          }"
           [(ngModel)]="cur_code"
         ></ngx-monaco-editor>
       </div>
