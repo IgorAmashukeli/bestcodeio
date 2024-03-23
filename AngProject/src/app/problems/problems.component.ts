@@ -50,7 +50,7 @@ export class ProblemsComponent implements OnInit {
   }
 
   openSolutionDialog(video_id: string = 'y3svPgyGnLc') {
-    this.dialogService.openDialog('75%', '75%', SolutionDialogComponent, {
+    this.dialogService.openDialog('1200px', '700px', SolutionDialogComponent, {
       video_id: video_id,
     });
   }

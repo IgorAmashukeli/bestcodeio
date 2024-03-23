@@ -11,6 +11,7 @@ import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MonacoService } from '../services/monaco.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'right-workspace',
@@ -26,15 +27,31 @@ export class RightWorkSpaceComponent implements OnInit, OnChanges {
   @Input() initial_language: string = '';
   @Input() example_array: Array<string> = [];
 
+  previous_language: string = '';
+  routeKey: string = '';
+
   selectedCase: number = 0;
 
   cur_code: string = this.initial_codes[this.initial_language];
-  constructor() {
+  constructor(private router: Router) {
+    this.routeKey = this.router.url;
     this.selectedLanguage = this.initial_language;
   }
 
   ngOnInit() {
-    this.cur_code = this.initial_codes[this.initial_language];
+    this.previous_language = this.initial_language;
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      const storedCodes = localStorage.getItem(this.routeKey);
+      this.initial_codes = storedCodes
+        ? JSON.parse(storedCodes)
+        : this.initial_codes;
+      this.cur_code = this.initial_codes[this.initial_language];
+
+      window.addEventListener(
+        'beforeunload',
+        this.saveCodesToLocalStorage.bind(this)
+      );
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -42,8 +59,35 @@ export class RightWorkSpaceComponent implements OnInit, OnChanges {
       changes['selectedLanguage'] &&
       !changes['selectedLanguage'].firstChange
     ) {
-      this.cur_code = this.initial_codes[this.selectedLanguage];
+      if (typeof localStorage !== 'undefined') {
+        // Update current code
+        const storedCodes = localStorage.getItem(this.routeKey);
+        this.initial_codes = storedCodes
+          ? JSON.parse(storedCodes)
+          : this.initial_codes;
+
+        // Store the updated initial_codes array in local storage
+
+        if (
+          this.selectedLanguage &&
+          this.initial_codes[this.selectedLanguage]
+        ) {
+          this.initial_codes[this.previous_language] = this.cur_code;
+        }
+        localStorage.setItem(this.routeKey, JSON.stringify(this.initial_codes));
+
+        this.cur_code = this.initial_codes[this.selectedLanguage];
+
+        // Update previous language
+        this.previous_language = this.selectedLanguage;
+      }
     }
+  }
+
+  saveCodesToLocalStorage() {
+    this.initial_codes[this.selectedLanguage] = this.cur_code;
+    // Save initial_codes array to local storage before the page reloads
+    localStorage.setItem(this.routeKey, JSON.stringify(this.initial_codes));
   }
 
   changeSelectedCase(case_number: number) {
@@ -69,5 +113,15 @@ export class RightWorkSpaceComponent implements OnInit, OnChanges {
 
     // Return the input, output, and explanation as an object
     return { inp: input, outp: output };
+  }
+
+  ngOnDestroy() {
+    // Remove the event listener when the component is destroyed
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      window.removeEventListener(
+        'beforeunload',
+        this.saveCodesToLocalStorage.bind(this)
+      );
+    }
   }
 }

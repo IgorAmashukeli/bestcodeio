@@ -33,7 +33,6 @@ export class SolutionDialogComponent implements OnInit {
   ngOnInit(): void {
     if (this.data) {
       this.videoUrl = 'https://youtube.com/embed/' + this.data.video_id;
-      console.log(this.videoUrl);
     }
   }
 
