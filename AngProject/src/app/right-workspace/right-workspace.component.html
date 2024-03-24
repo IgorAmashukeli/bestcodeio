@@ -10,11 +10,10 @@
         "
       >
         <ngx-monaco-editor
+          id="mon-editor"
           style="height: 100vh; width: 100vw"
           [options]="{
-            ambiguousCharacters: false,
             language: this.selectedLanguage,
-            
           }"
           [(ngModel)]="cur_code"
         ></ngx-monaco-editor>

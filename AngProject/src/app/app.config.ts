@@ -117,22 +117,32 @@ export function myMonacoLoad() {
         ],
         [/".*?"/, 'string'],
         [/--.*$/, 'comment'],
+        [/[{}()[\],;]/, 'delimiter'],
       ],
     },
   });
 
-  (window as any).monaco.editor.defineTheme('lean-theme', {
+  (window as any).monaco.editor.defineTheme('myCoolTheme', {
     base: 'vs-dark',
-    inherit: true,
+    inherit: false,
     rules: [
-      { token: 'keyword', foreground: '#FF6600', fontStyle: 'bold' },
-      { token: 'comment', foreground: '#999999' },
-      { token: 'string', foreground: '#009966' },
-      { token: 'variable', foreground: '#006699' },
+      { token: 'keyword', foreground: 'cc76d8', fontStyle: 'bold' },
+      { token: 'identifier', foreground: '55afea' },
+      { token: 'string', foreground: '98C379' },
+      { token: 'comment', foreground: '808080' },
+      { token: 'delimiter', foreground: 'ABB2BF' },
     ],
+    colors: {
+      'editor.foreground': '#FFFFFF',
+      'editorLineNumber.foreground': '#808080',
+      'editorLineNumber.activeForeground': '#FFFFFF',
+    },
   });
 
-  (window as any).monaco.editor.setTheme('vs-dark');
+  (window as any).monaco.editor.create(document.getElementById('mon-editor'), {
+    theme: 'myCoolTheme',
+    readOnly: false,
+  });
 }
 
 const monacoConfig: NgxMonacoEditorConfig = {
