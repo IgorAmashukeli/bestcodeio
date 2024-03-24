@@ -7,12 +7,11 @@
 body {
   background-color: rgb(68, 68, 68);
 }
-
 .pop-window {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 85%;
+  height: 75%;
   width: 100%;
   background-color: rgb(68, 68, 68);
 }
@@ -27,12 +26,21 @@ body {
   color: rgb(68, 68, 68);
   background-color: red;
   border-radius: 50%;
-  height: 1.5vw;
+  height: 2.8vh;
   width: 1.5vw;
   border: none;
 }
 
-.message {
-  font-size: 1.5vw;
+.close-btn:hover {
+  background-color: rgb(255, 68, 68);
+}
+
+.text {
+  text-align: center;
+  font-size: 2vw;
   color: red;
+  position: absolute;
+  inset: 0;
+  height: 3vh;
+  margin-top: 30vh;
 }

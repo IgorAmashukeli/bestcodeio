@@ -26,6 +26,9 @@ import {
 } from '../problem_list/problem_list';
 import { Problem } from '../problem_list/problem_list';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../services/auth.service';
+import { DialogService } from '../services/dialog.service';
+import { WarningDialogComponent } from '../warning_dialog/warning_dialog.component';
 
 @Component({
   selector: 'app-problem',
@@ -79,7 +82,11 @@ export class ProblemComponent implements AfterContentChecked {
     this.example_array = problem['examples'];
   }
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    public authService: AuthService,
+    public dialogService: DialogService
+  ) {
     this.selectedNavItem = 'description_page';
     const splited: any = this.router.url.split('/');
     this.course_type = splited[1];
@@ -128,5 +135,9 @@ export class ProblemComponent implements AfterContentChecked {
 
   selectNavItem(item: string) {
     this.selectedNavItem = item;
+  }
+
+  submitNotSignedIn() {
+    this.dialogService.openDialog('80%', '75%', WarningDialogComponent);
   }
 }

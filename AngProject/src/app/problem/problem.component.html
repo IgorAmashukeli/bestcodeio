@@ -31,28 +31,59 @@
       >
         Submissions
       </div>
-      <div style="width: 16.66667%; display: flex; align-items: center">
-        <select
-          id="language"
-          name="language"
-          class="selector-class"
-          [(ngModel)]="selectedLanguage"
+      <ng-container>
+        <div
+          *ngIf="!this.course_flag"
+          style="width: 16.66667%; display: flex; align-items: center"
         >
-          <ng-container
-            *ngFor="let element of this.language_array; let i = index"
+          <select
+            id="language"
+            name="language"
+            class="selector-class"
+            [(ngModel)]="selectedLanguage"
           >
-            <option class="option-class" value="{{ element[1] }}">
-              {{ element[0] }}
-            </option>
-          </ng-container>
-        </select>
-      </div>
-      <div style="width: 16.66667%; display: flex; align-items: center">
-        <button class="run-button">Run</button>
-      </div>
-      <div style="width: 16.66667%; display: flex; align-items: center">
-        <button class="submit-button">Submit</button>
-      </div>
+            <ng-container
+              *ngFor="let element of this.language_array; let i = index"
+            >
+              <option class="option-class" value="{{ element[1] }}">
+                {{ element[0] }}
+              </option>
+            </ng-container>
+          </select>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="authService.loggedIn$ | async">
+        <div
+          *ngIf="!this.course_flag"
+          style="width: 16.66667%; display: flex; align-items: center"
+        >
+          <button class="run-button">Run</button>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="!(authService.loggedIn$ | async)">
+        <div
+          *ngIf="!this.course_flag"
+          style="width: 16.66667%; display: flex; align-items: center"
+        >
+          <button class="run-button" (click)="submitNotSignedIn()">Run</button>
+        </div>
+      </ng-container>
+      <ng-container>
+        <div
+          *ngIf="authService.loggedIn$ | async"
+          style="width: 16.66667%; display: flex; align-items: center"
+        >
+          <button class="submit-button">Submit</button>
+        </div>
+        <div
+          *ngIf="!(authService.loggedIn$ | async)"
+          style="width: 16.66667%; display: flex; align-items: center"
+        >
+          <button class="submit-button" (click)="submitNotSignedIn()">
+            Submit
+          </button>
+        </div>
+      </ng-container>
     </div>
   </mat-toolbar>
 </div>
