@@ -1,2 +1,3 @@
 # ignore git.sh
 git.sh
+node_modules
