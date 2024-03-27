@@ -17,6 +17,8 @@ import { Problem } from '../problem_list/problem_list';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
 import { HttpClientModule } from '@angular/common/http';
+import { DataService } from '../services/data.service';
+import { Observable, of } from 'rxjs';
 
 @Component({
   selector: 'description',
@@ -38,6 +40,7 @@ export class DescriptionComponent implements OnInit {
   examples: Array<string> = [];
   constraints: Array<string> = [];
   note: string = '';
+  loading: Observable<boolean> = of(false);
 
   assign_fields(problem: any): void {
     this.problem_name = problem['title'];
@@ -60,27 +63,23 @@ export class DescriptionComponent implements OnInit {
   constructor(
     private router: Router,
     private http: HttpClient,
-    private route: ActivatedRoute,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    public dataService: DataService
   ) {}
 
   ngOnInit(): void {
     const splited: any = this.router.url.split('/');
     const course = splited[1];
     const topic = splited[2];
-    const problemId = +splited[3]; // Convert to number using '+'
-    this.fetchProblem(course, topic, problemId);
-  }
-
-  fetchProblem(course: string, topic: string, problemId: number): void {
-    const url = `http://localhost:3000/get_problem/${course}/${topic}/${problemId}`;
-    this.http.get<any[]>(url).subscribe({
+    const problemId = +splited[3];
+    this.dataService.fetchProblemData(course, topic, problemId).subscribe({
       next: (problem: any[]) => {
         this.assign_fields(problem[0]);
+        this.loading = of(true);
       },
       error: (error: any) => {
         console.error('Error fetching problem:', error);
-        // Handle error, show error message, etc.
+        this.loading = of(true);
       },
     });
   }

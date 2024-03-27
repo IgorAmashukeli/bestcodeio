@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MonacoService } from '../services/monaco.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { DataService } from '../services/data.service';
 
 @Component({
   selector: 'right-workspace',
@@ -21,11 +22,11 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrls: ['./right-workspace.component.css'],
 })
 export class RightWorkSpaceComponent implements OnInit, OnChanges {
-  @Input() selectedLanguage: string;
-  @Input() code_languages: Array<Array<string>> = [[]];
-  @Input() initial_codes: any = {};
-  @Input() initial_language: string = '';
-  @Input() example_array: Array<string> = [];
+  @Input() selectedLanguage: string = '';
+  code_languages: Array<Array<string>> = [[]];
+  initial_codes: any = {};
+  initial_language: string = '';
+  example_array: Array<string> = [];
 
   previous_language: string = '';
   routeKey: string = '';
@@ -33,24 +34,44 @@ export class RightWorkSpaceComponent implements OnInit, OnChanges {
   selectedCase: number = 0;
 
   cur_code: string = this.initial_codes[this.initial_language];
-  constructor(private router: Router) {
+  constructor(private router: Router, private dataService: DataService) {
     this.routeKey = this.router.url;
+  }
+
+  assign_fields(problem: any): void {
+    this.code_languages = problem['languages'];
+    this.initial_codes = problem['initial_codes'];
+    this.initial_language = problem['initial_language'];
     this.selectedLanguage = this.initial_language;
+    this.example_array = problem['examples'];
+    this.previous_language = this.initial_language;
   }
 
   ngOnInit() {
-    this.previous_language = this.initial_language;
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       const storedCodes = localStorage.getItem(this.routeKey);
-      this.initial_codes = storedCodes
-        ? JSON.parse(storedCodes)
-        : this.initial_codes;
-      this.cur_code = this.initial_codes[this.initial_language];
+      const splited: any = this.router.url.split('/');
+      const course = splited[1];
+      const topic = splited[2];
+      const problemId = +splited[3];
+      this.dataService.fetchProblemData(course, topic, problemId).subscribe({
+        next: (problem: any[]) => {
+          this.assign_fields(problem[0]);
+          const storedCodes = localStorage.getItem(this.routeKey);
+          this.initial_codes = storedCodes
+            ? JSON.parse(storedCodes)
+            : this.initial_codes;
+          this.cur_code = this.initial_codes[this.initial_language];
 
-      window.addEventListener(
-        'beforeunload',
-        this.saveCodesToLocalStorage.bind(this)
-      );
+          window.addEventListener(
+            'beforeunload',
+            this.saveCodesToLocalStorage.bind(this)
+          );
+        },
+        error: (error: any) => {
+          console.error('Error fetching problem:', error);
+        },
+      });
     }
   }
 

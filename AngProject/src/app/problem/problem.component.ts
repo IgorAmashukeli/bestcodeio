@@ -29,6 +29,9 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { DialogService } from '../services/dialog.service';
 import { WarningDialogComponent } from '../warning_dialog/warning_dialog.component';
+import { HttpClient } from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';
+import { DataService } from '../services/data.service';
 
 @Component({
   selector: 'app-problem',
@@ -47,6 +50,7 @@ import { WarningDialogComponent } from '../warning_dialog/warning_dialog.compone
     DescriptionComponent,
     SubmissionsComponent,
     FormsModule,
+    HttpClientModule,
   ],
 })
 export class ProblemComponent implements AfterContentChecked {
@@ -67,14 +71,7 @@ export class ProblemComponent implements AfterContentChecked {
   window_object: any;
   splitHeight: string = '0px';
 
-  assign_fields(
-    course_route: string,
-    problem_id: number,
-    indices: any,
-    problems: Array<Array<Problem>>
-  ): void {
-    this.course_id = indices[course_route];
-    const problem = problems[this.course_id][problem_id];
+  assign_fields(problem: any): void {
     this.language_array = problem['languages'];
     this.initial_codes = problem['initial_codes'];
     this.initial_language = problem['initial_language'];
@@ -84,34 +81,14 @@ export class ProblemComponent implements AfterContentChecked {
 
   constructor(
     private router: Router,
+    private http: HttpClient,
     public authService: AuthService,
-    public dialogService: DialogService
-  ) {
-    this.selectedNavItem = 'description_page';
-    const splited: any = this.router.url.split('/');
-    this.course_type = splited[1];
-    this.course_flag = this.course_type === 'math';
-    const course_route: string = splited[2];
-    const problem_id: number = parseInt(splited[3]);
-    if (this.course_flag) {
-      this.assign_fields(course_route, problem_id, math_indices, math_problems);
-    } else {
-      this.assign_fields(
-        course_route,
-        problem_id,
-        programming_indices,
-        programming_problems
-      );
-    }
-    if (typeof window !== 'undefined') {
-      this.window_object = window;
-    }
-  }
+    public dialogService: DialogService,
+    public dataService: DataService
+  ) {}
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
-    // Recalculate the height here
-    // You can use this code to adjust the height dynamically:
     const navigationBarHeight = this.navigationBar.nativeElement.offsetHeight;
     const toolbarHeight = this.toolbar.nativeElement.offsetHeight;
     if (typeof window !== 'undefined') {
@@ -121,7 +98,24 @@ export class ProblemComponent implements AfterContentChecked {
   }
 
   ngOnInit() {
+    this.selectedNavItem = 'description_page';
     this.parent_route = this.router.url.split('/').slice(0, -1).join('/');
+    const splited: any = this.router.url.split('/');
+    const course = splited[1];
+    this.course_flag = course == 'math';
+    const topic = splited[2];
+    const problemId = +splited[3];
+    this.dataService.fetchProblemData(course, topic, problemId).subscribe({
+      next: (problem: any[]) => {
+        this.assign_fields(problem[0]);
+        if (typeof window !== 'undefined') {
+          this.window_object = window;
+        }
+      },
+      error: (error: any) => {
+        console.error('Error fetching problem:', error);
+      },
+    });
   }
 
   ngAfterContentChecked() {

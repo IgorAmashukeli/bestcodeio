@@ -150,7 +150,7 @@ const document = {
     ],
     initial_codes: {
         cpp: '#include <iostream>\n\nint summa(int n, int k) {\n    // your code here\n}\n\nint main() {\n    // your code here\n}',
-        python: '#your code here:\ndef my_function(n, k):\nreturn 0',
+        python: '#your code here:\ndef my_function(n, k):\n    return 0',
         javascript:
             '//your code here\nfunction myFunction(n, k) {\n\n    return 0;\n}',
         java: '//your code here\npublic class MyClass {\n    public static void myFunction(int n, int k) {\n        // Your Java code here\n        return 0;\n    }\n\n    public static void main(String[] args) {}\n}',
@@ -172,6 +172,7 @@ async function closeConnection() {
 
 connectToDatabase()
     .then(async () => {
+        await addNewDocument(document);
         await getAllDocumentsWithKeys();
         await closeConnection();
     })

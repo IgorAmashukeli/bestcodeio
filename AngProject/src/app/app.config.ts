@@ -16,6 +16,7 @@ import {
   MonacoEditorModule,
   NgxMonacoEditorConfig,
 } from 'ngx-monaco-editor-v2';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 
 export function myMonacoLoad() {
   (window as any).monaco.languages.register({ id: 'lean' });
@@ -153,6 +154,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withViewTransitions()),
     provideAnimations(),
+    provideHttpClient(withFetch()),
 
     importProvidersFrom(
       provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
