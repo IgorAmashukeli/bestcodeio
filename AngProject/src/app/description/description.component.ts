@@ -1,5 +1,11 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { math_indices } from '../app.routes';
 import { programming_indices } from '../app.routes';
 import {
@@ -9,15 +15,17 @@ import {
 import { CommonModule } from '@angular/common';
 import { Problem } from '../problem_list/problem_list';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'description',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HttpClientModule],
   templateUrl: './description.component.html',
   styleUrl: './description.component.css',
 })
-export class DescriptionComponent {
+export class DescriptionComponent implements OnInit {
   course_type: string = '';
   course_id: number = -1;
   course_flag: boolean = true;
@@ -31,14 +39,7 @@ export class DescriptionComponent {
   constraints: Array<string> = [];
   note: string = '';
 
-  assign_fields(
-    course_route: string,
-    problem_id: number,
-    indices: any,
-    problems: Array<Array<Problem>>
-  ): void {
-    this.course_id = indices[course_route];
-    const problem = problems[this.course_id][problem_id];
+  assign_fields(problem: any): void {
     this.problem_name = problem['title'];
     this.problem_difficulty = problem['difficulty'];
     this.accepted = problem['accepted'];
@@ -52,22 +53,36 @@ export class DescriptionComponent {
     this.note = problem['note'];
   }
 
-  constructor(private router: Router, private sanitizer: DomSanitizer) {
+  extractSubstring(input: string) {
+    return input.split('/').slice(0, 3).join('/');
+  }
+
+  constructor(
+    private router: Router,
+    private http: HttpClient,
+    private route: ActivatedRoute,
+    private sanitizer: DomSanitizer
+  ) {}
+
+  ngOnInit(): void {
     const splited: any = this.router.url.split('/');
-    this.course_type = splited[1];
-    this.course_flag = this.course_type === 'math';
-    const course_route: string = splited[2];
-    const problem_id: number = parseInt(splited[3]);
-    if (this.course_flag) {
-      this.assign_fields(course_route, problem_id, math_indices, math_problems);
-    } else {
-      this.assign_fields(
-        course_route,
-        problem_id,
-        programming_indices,
-        programming_problems
-      );
-    }
+    const course = splited[1];
+    const topic = splited[2];
+    const problemId = +splited[3]; // Convert to number using '+'
+    this.fetchProblem(course, topic, problemId);
+  }
+
+  fetchProblem(course: string, topic: string, problemId: number): void {
+    const url = `http://localhost:3000/get_problem/${course}/${topic}/${problemId}`;
+    this.http.get<any[]>(url).subscribe({
+      next: (problem: any[]) => {
+        this.assign_fields(problem[0]);
+      },
+      error: (error: any) => {
+        console.error('Error fetching problem:', error);
+        // Handle error, show error message, etc.
+      },
+    });
   }
 
   sanitizeHTML(html: string): SafeHtml {
