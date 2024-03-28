@@ -220,7 +220,6 @@ async function getAllDocumentsWithKeysByCourse(collectionName, cur_course) {
                     }
                 };
             });
-            console.log(allDocuments);
             return allDocuments;
 
         } else {
@@ -242,19 +241,20 @@ app.post('/create_user/:user_id', async (req, res) => {
         }
         const [keys, collection] = result;
 
-        const problems = keys.map(cur_problem_key => {
-            return {
-                "problem_key": cur_problem_key,
+        let userInfo_result = {};
+
+        keys.forEach(key => {
+            userInfo_result[key] = {
                 "status": "Not solved",
                 "last solutions": []
-            }
+            };
         });
 
-        const userInfo = { "user_id": user_id, "problems": problems };
+        const userInfo = { "user_id": user_id, "problems": userInfo_result };
 
         const ins_res = await collection.insertOneAndGet(userInfo);
         if (ins_res) {
-            res.status(200).json("OK");
+            res.status(200).json(ins_res);
         } else {
             res.status(500).json({ error: 'Internal server error' });
         }

@@ -3,8 +3,9 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../services/auth.service';
 import { CommonModule } from '@angular/common';
-import { Auth } from '@angular/fire/auth';
+import { Auth, User } from '@angular/fire/auth';
 import { DataService } from '../services/data.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-dialog',
@@ -27,35 +28,31 @@ export class SignInDialogComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  createUserInfo(user_uid: string) {
-    this.dataService.createUserData(user_uid).subscribe({
-      next: (response) => {
-        console.log('User info created:', response);
-      },
-      error: (error) => {
-        console.error('Error creating user info:', error);
-      },
-    });
+  async signInWithGoogle() {
+    await this.authService.googleSignIn();
+    this.closeDialog();
+    const user = this.auth.currentUser;
+    if (user) {
+      const users = await firstValueFrom(
+        this.dataService.fetchUserData(user.uid)
+      );
+      if (users.length === 0) {
+        await this.createUserInfo(user.uid);
+      }
+    } else {
+      console.error('Error creating user info');
+    }
   }
 
-  signInWithGoogle() {
-    this.authService.googleSignIn();
-    this.closeDialog();
-    this.auth.onAuthStateChanged((user) => {
-      if (user) {
-        this.dataService.fetchUserData(user.uid).subscribe({
-          next: (users: any[]) => {
-            if (users.length == 0) {
-              this.createUserInfo(user.uid);
-            }
-          },
-          error: (error: any) => {
-            console.error('Error fetching problem:', error);
-          },
-        });
-      } else {
-      }
-    });
+  async createUserInfo(user_uid: string) {
+    try {
+      const response = await firstValueFrom(
+        this.dataService.createUserData(user_uid)
+      );
+      console.log('User info created:', response);
+    } catch (error) {
+      console.error('Error creating user info:', error);
+    }
   }
 
   signOut() {

@@ -13,6 +13,9 @@ import {
 import { math_indices, programming_indices } from '../app.routes';
 import { Problem } from '../problem_list/problem_list';
 import { NavigationBarComponent } from '../navigation_bar/navigation_bar.component';
+import { DataService } from '../services/data.service';
+import { Observable, of } from 'rxjs';
+import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'problems',
@@ -26,13 +29,17 @@ export class ProblemsComponent implements OnInit {
   course_type: string = '';
   course_id: number = -1;
   course_flag: boolean = true;
-  problemArray: Problem[] = [];
+  problemArray: Array<any> = [];
+  loading: Observable<boolean> = of(false);
+  user_statuses: Array<string> = [];
 
   constructor(
     private route: ActivatedRoute,
     public router: Router,
     private dialogService: DialogService,
-    public authService: AuthService
+    public authService: AuthService,
+    public auth: Auth,
+    private dataService: DataService
   ) {}
 
   ngOnInit(): void {
@@ -40,13 +47,52 @@ export class ProblemsComponent implements OnInit {
     const course_route: string = this.router.url.split('/')[2];
     this.course_flag = this.course_type === 'math';
     this.course_title = this.route.snapshot.data['title'];
-    if (this.course_flag) {
-      this.course_id = math_indices[course_route];
-      this.problemArray = math_problems[this.course_id];
-    } else {
-      this.course_id = programming_indices[course_route];
-      this.problemArray = programming_problems[this.course_id];
-    }
+    this.auth.onAuthStateChanged((user) => {
+      if (user) {
+        this.dataService
+          .fetchProblemsData(this.course_type, course_route)
+          .subscribe({
+            next: (problem: any[]) => {
+              this.dataService.fetchUserData(user.uid).subscribe({
+                next: (usersInfo: any[]) => {
+                  const user_problems = usersInfo[0]['problems'];
+                  problem.forEach((item) => {
+                    const key = item.key;
+                    const status = user_problems[key]?.status; // Get status for the key
+                    if (status) {
+                      this.user_statuses.push(status); // Push status into user_statuses array
+                    }
+                  });
+                },
+
+                error: (error: any) => {
+                  console.error('Error fetching problem:', error);
+                },
+              });
+
+              this.problemArray = problem;
+              this.loading = of(true);
+            },
+            error: (error: any) => {
+              console.error('Error fetching problem:', error);
+              this.loading = of(true);
+            },
+          });
+      } else {
+        this.dataService
+          .fetchProblemsData(this.course_type, course_route)
+          .subscribe({
+            next: (problem: any[]) => {
+              this.problemArray = problem;
+              this.loading = of(true);
+            },
+            error: (error: any) => {
+              console.error('Error fetching problem:', error);
+              this.loading = of(true);
+            },
+          });
+      }
+    });
   }
 
   openSolutionDialog(video_id: string = 'y3svPgyGnLc') {

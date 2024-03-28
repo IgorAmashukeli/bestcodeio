@@ -229,7 +229,6 @@ async function getAllDocumentsWithKeysByCourse(collectionName, cur_course) {
                     }
                 };
             });
-            console.log(allDocuments);
             return allDocuments;
 
         } else {
@@ -242,10 +241,31 @@ async function getAllDocumentsWithKeysByCourse(collectionName, cur_course) {
 }
 
 
+async function getDocumentsByQuery(collection_name, query) {
+    try {
+        const soda = connection.getSodaDatabase();
+
+        collection = await soda.openCollection(collection_name);
+
+        const documents = await collection.find().filter(query).getDocuments();
+        const jsonObjects = documents.map(doc => doc.getContent());
+
+        if (jsonObjects.length > 0) {
+            return jsonObjects;
+        } else {
+            return [];
+        }
+    } catch (err) {
+        console.error(err);
+        return [];
+    }
+}
+
+
 
 connectToDatabase()
     .then(async () => {
-        await getAllDocumentsWithKeysByCourse("mycollection", "/math/logic");
+        await getAllDocumentsWithKeys("users");
         await closeConnection();
     })
     .catch(err => {
