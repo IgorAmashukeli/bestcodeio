@@ -14,8 +14,8 @@ import { math_indices, programming_indices } from '../app.routes';
 import { Problem } from '../problem_list/problem_list';
 import { NavigationBarComponent } from '../navigation_bar/navigation_bar.component';
 import { DataService } from '../services/data.service';
-import { Observable, of } from 'rxjs';
-import { Auth } from '@angular/fire/auth';
+import { Observable, Subscription, of } from 'rxjs';
+import { Auth, Unsubscribe, User } from '@angular/fire/auth';
 
 @Component({
   selector: 'problems',
@@ -32,6 +32,7 @@ export class ProblemsComponent implements OnInit {
   problemArray: Array<any> = [];
   loading: Observable<boolean> = of(false);
   user_statuses: Array<string> = [];
+  authStateChangedSubscription!: Unsubscribe;
 
   constructor(
     private route: ActivatedRoute,
@@ -58,15 +59,15 @@ export class ProblemsComponent implements OnInit {
                   const user_problems = usersInfo[0]['problems'];
                   problem.forEach((item) => {
                     const key = item.key;
-                    const status = user_problems[key]?.status; // Get status for the key
+                    const status = user_problems[key]?.status;
                     if (status) {
-                      this.user_statuses.push(status); // Push status into user_statuses array
+                      this.user_statuses.push(status);
                     }
                   });
                 },
 
                 error: (error: any) => {
-                  console.error('Error fetching problem:', error);
+                  console.error('Error fetching user:', error);
                 },
               });
 
@@ -92,6 +93,33 @@ export class ProblemsComponent implements OnInit {
             },
           });
       }
+    });
+
+    this.authStateChangedSubscription = this.auth.onAuthStateChanged((user) => {
+      if (user) {
+        this.loading = of(false);
+        this.fetchUserInfoHelper(user);
+      }
+    });
+  }
+
+  fetchUserInfoHelper(user: User) {
+    this.dataService.fetchUserData(user.uid).subscribe({
+      next: (usersInfo: any[]) => {
+        const user_problems = usersInfo[0]['problems'];
+        this.problemArray.forEach((item) => {
+          const key = item.key;
+          const status = user_problems[key]?.status;
+          if (status) {
+            this.user_statuses.push(status);
+          }
+          this.loading = of(true);
+        });
+      },
+
+      error: (error: any) => {
+        console.error('Error fetching user:', error);
+      },
     });
   }
 
