@@ -49,11 +49,11 @@ async function closeConnection() {
 
 
 
-async function getAllDocumentsWithKeys() {
+async function getAllDocumentsWithKeys(collectionName) {
     try {
         const soda = connection.getSodaDatabase();
 
-        collection = await soda.openCollection("mycollection");
+        collection = await soda.openCollection(collectionName);
 
         const docs = await collection.find().getDocuments();
 
@@ -77,12 +77,34 @@ async function getAllDocumentsWithKeys() {
 }
 
 
-
-async function addNewDocument(content) {
+async function getAllDocumentKeys() {
     try {
         const soda = connection.getSodaDatabase();
 
-        collection = await soda.openCollection("mycollection");
+        collection = await soda.openCollection("keys_collection");
+
+        const keys = await collection.find().getDocuments();
+
+        if (keys.length > 0) {
+            console.log("All documents with keys retrieved successfully:", keys[0].getContent()['keys']);
+            return keys[0];
+        } else {
+            console.log("No documents found in the collection.");
+            return [];
+        }
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
+
+
+
+async function addNewDocument(collectionName, content) {
+    try {
+        const soda = connection.getSodaDatabase();
+
+        collection = await soda.openCollection(collectionName);
 
         const doc = await collection.insertOneAndGet(content);
 
@@ -101,11 +123,11 @@ async function addNewDocument(content) {
 
 
 
-async function deleteDocumentByKey(key) {
+async function deleteDocumentByKey(collectionName, key) {
     try {
         const soda = connection.getSodaDatabase();
 
-        collection = await soda.openCollection("mycollection");
+        collection = await soda.openCollection(collectionName);
 
         await collection.find().key(key).remove();
 
@@ -170,10 +192,60 @@ async function closeConnection() {
 }
 
 
+async function createNewCollection(collection_name) {
+    const soda = connection.getSodaDatabase();
+
+    collection = await soda.createCollection(collection_name);
+}
+
+async function getAllDocumentsWithKeysByCourse(collectionName, cur_course) {
+    try {
+        const soda = connection.getSodaDatabase();
+
+        const collection = await soda.openCollection(collectionName);
+
+        const query = {
+            "$query": {
+                "course": cur_course
+            },
+            "$orderby": [
+                { "path": "id", "datatype": "number", "order": "asc" }
+            ]
+        };
+
+        const docs = await collection.find().filter(query).getDocuments();
+
+        if (docs.length > 0) {
+            const allDocuments = docs.map(doc => {
+                doc_content = doc.getContent();
+                return {
+                    key: doc.key,
+                    content: {
+                        "title": doc_content['title'],
+                        "course": doc_content['course'],
+                        "id": doc_content['id'],
+                        "difficulty": doc_content['difficulty'],
+                        "video_id": doc_content['video_id']
+                    }
+                };
+            });
+            console.log(allDocuments);
+            return allDocuments;
+
+        } else {
+            return [];
+        }
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
+
+
+
 connectToDatabase()
     .then(async () => {
-        await addNewDocument(document);
-        await getAllDocumentsWithKeys();
+        await getAllDocumentsWithKeysByCourse("mycollection", "/math/logic");
         await closeConnection();
     })
     .catch(err => {
