@@ -15,6 +15,7 @@ import { Router } from '@angular/router';
 export class WarningDialogComponent implements OnInit {
   currentRoute: string = '';
   constructor(
+    @Inject(MAT_DIALOG_DATA) public dialogData: any,
     public dialogRef: MatDialogRef<WarningDialogComponent>,
     public auth: AuthService,
     private router: Router

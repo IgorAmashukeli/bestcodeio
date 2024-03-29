@@ -4,6 +4,9 @@
   </div>
 
   <div class="pop-window" style="width: 100%">
-    <p class="text">To run/submit, please sign in</p>
+    <ng-container>
+      <p *ngIf="!this.dialogData" class="text">To run, please sign in</p>
+      <p *ngIf="this.dialogData" class="text">To submit, please sign in</p>
+    </ng-container>
   </div>
 </body>

@@ -131,7 +131,12 @@ export class ProblemComponent implements AfterContentChecked {
     this.selectedNavItem = item;
   }
 
-  submitNotSignedIn() {
-    this.dialogService.openDialog('80%', '75%', WarningDialogComponent);
+  submitNotSignedIn(button_type: number) {
+    this.dialogService.openDialog(
+      '60%',
+      '55%',
+      WarningDialogComponent,
+      button_type
+    );
   }
 }
