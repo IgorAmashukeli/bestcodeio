@@ -1,7 +1,158 @@
 const express = require('express');
 const cors = require('cors');
+const Docker = require('dockerode');
+const fs = require('fs');
+
+
+const docker = new Docker();
+
+const volumePath = '/home/igor/Programming/Industry/PetProjects/bestcodeio/AngProject/server';
+
+const containerPath = '/data'
 
 const oracledb = require('oracledb');
+const { get } = require('http');
+
+let some_theorems = ""
+
+let container = '';
+
+
+function checkContainersForImage(imageName, callback) {
+    docker.listContainers({ all: true }, function (err, containers) {
+        if (err) {
+            callback(err, null);
+            return;
+        }
+
+        const containerWithImage = containers.some(c => c.Image === imageName);
+        if (containerWithImage) {
+            const existingContainer = containers.find(c => c.Image === imageName);
+            container = docker.getContainer(existingContainer.Id);
+        }
+
+        callback(null, containerWithImage);
+    });
+}
+
+
+async function runLEANContainer(data) {
+    code = data["code"]
+    required_theorems = data["required_theorems"]
+
+    fs.writeFileSync(`${volumePath}/test.lean`, code);
+
+    return new Promise((resolve, reject) => {
+        checkContainersForImage('lean_image', async function (err, containerExists) {
+            if (err) {
+                console.error('Error checking containers for image:', err);
+                reject(err);
+                return;
+            }
+
+            if (!containerExists) {
+                try {
+                    const newContainer = await docker.createContainer({
+                        Image: 'lean_image',
+                        Tty: true,
+                        AttachStdout: true,
+                        AttachStderr: true,
+                        HostConfig: {
+                            Binds: [`${volumePath}:${containerPath}`],
+                        },
+                    });
+
+                    container = newContainer;
+
+                    await container.start();
+
+                    const result = await executeLeanCommand(code, required_theorems);
+                    resolve(result);
+                } catch (error) {
+                    console.error('Error creating or starting container:', error);
+                    reject(error);
+                }
+            } else {
+                try {
+                    await container.restart();
+                    const result = await executeLeanCommand(code, required_theorems);
+                    resolve(result);
+                } catch (error) {
+                    console.error('Error restarting container:', error);
+                    reject(error);
+                }
+            }
+        });
+    });
+}
+
+
+function check_including(code, required_theorems) {
+    for (const theorem of required_theorems) {
+        if (!code.includes(theorem)) {
+            console.log(code)
+            console.log(theorem)
+            some_theorems = theorem;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+async function executeLeanCommand(code, required_theorems) {
+    return new Promise((resolve, reject) => {
+        container.exec({
+            Cmd: ['lean', '/data/test.lean'],
+            AttachStdout: true,
+            AttachStderr: true
+        }, function (err, exec) {
+            if (err) {
+                console.error('Error executing lean command:', err);
+                reject(err);
+                return;
+            }
+
+            exec.start(function (err, stream) {
+                if (err) {
+                    console.error('Error starting lean command:', err);
+                    reject(err);
+                    return;
+                }
+
+                let leanOutput = '';
+
+                stream.on('data', function (chunk) {
+                    leanOutput += chunk.toString();
+                });
+
+                console.log(leanOutput);
+
+                stream.on('end', function () {
+                    let result;
+
+                    if (leanOutput.includes('error')) {
+                        result = 'Wrong Proof:' + leanOutput.trim();
+                    }
+                    else if (leanOutput.includes('sorry')) {
+                        result = 'Missing Proof:' + leanOutput.trim();
+                    } else {
+                        if (check_including(code, required_theorems)) {
+                            result = 'OK! All theorems are proved';
+                        } else {
+                            result = 'Missing Proof: No "' + some_theorems + '" found';
+                        }
+                    }
+
+                    resolve(result);
+                });
+            });
+        });
+    });
+}
+
+
 
 
 if (process.platform === 'linux') {
@@ -70,6 +221,51 @@ async function getDocumentsByQuery(collection_name, query) {
 }
 
 
+async function getDocumentKeysByQuery(collection_name, query) {
+    try {
+        const soda = connection.getSodaDatabase();
+
+        collection = await soda.openCollection(collection_name);
+
+        const documents = await collection.find().filter(query).getDocuments();
+        const jsonObjects = documents.map(doc => doc.key);
+
+        if (jsonObjects.length > 0) {
+            return jsonObjects;
+
+        } else {
+            return [];
+        }
+    } catch (err) {
+        console.error(err);
+        return [];
+    }
+}
+
+
+async function getDocumentAndKeysByQuery(collection_name, query) {
+    try {
+        const soda = connection.getSodaDatabase();
+
+        collection = await soda.openCollection(collection_name);
+
+        const documents = await collection.find().filter(query).getDocuments();
+        const jsonObjects = documents.map(doc => [doc.key, doc.getContent()]);
+
+        if (jsonObjects.length > 0) {
+            return jsonObjects;
+
+        } else {
+            return [];
+        }
+    } catch (err) {
+        console.error(err);
+        return [];
+    }
+}
+
+
+
 let server;
 
 connectToDatabase().then(async () => {
@@ -103,11 +299,6 @@ app.use(cors())
 
 
 
-
-
-app.get('/', (req, res) => {
-    res.send('Hello, Nodemoon working!');
-});
 
 
 app.get('/get_problem/:course/:topic/:problemId', async (req, res) => {
@@ -265,7 +456,33 @@ app.post('/create_user/:user_id', async (req, res) => {
 })
 
 
-app.get('/get_problems/:course/:topic/', async (req, res) => {
+
+async function updateDocumentByKey(collection_name, key, updatedContent) {
+    try {
+        const soda = connection.getSodaDatabase();
+        const collection = await soda.openCollection(collection_name);
+        const doc = await collection.find().key(key).getOne();
+
+        if (doc) {
+            const updatedDoc = await collection.find().key(key).replaceOneAndGet(updatedContent);
+
+            if (updatedDoc) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            console.log("Document with key", key, "not found.");
+            return false;
+        }
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+}
+
+
+app.get('/get_problems/:course/:topic', async (req, res) => {
     try {
         const course = req.params.course;
         const topic = req.params.topic;
@@ -276,3 +493,59 @@ app.get('/get_problems/:course/:topic/', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 })
+
+
+
+app.post('/submit_math/:topic/:problem_id', async (req, res) => {
+    try {
+        const code = req.body;
+        const topic = req.params.topic;
+        const problemId = req.params.problem_id;
+
+        const query = { "id": parseInt(problemId), "course": '/' + 'math' + '/' + topic };
+        const problem = await getDocumentsByQuery("mycollection", query);
+        const requirements = problem[0]['requirements'];
+        const result = await runLEANContainer({ "code": code["code"], "required_theorems": requirements });
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+
+app.put('/problem_solved/:user_id/:course/:topic/:problem_id', async (req, res) => {
+    try {
+        const user_id = req.params.user_id;
+        const course = req.params.course;
+        const topic = req.params.topic;
+        const problem_id = req.params.problem_id;
+
+        const query_problem = { "id": parseInt(problem_id), "course": '/' + course + '/' + topic };
+        const keys_problem = await getDocumentKeysByQuery('mycollection', query_problem);
+        const key_problem = keys_problem[0];
+
+        const query_user = { "user_id": user_id };
+        const keys_and_objects_user = await getDocumentAndKeysByQuery('users', query_user);
+        const key_and_objects_user = keys_and_objects_user[0]
+        const key_user = key_and_objects_user[0]
+        let content_user = key_and_objects_user[1];
+        content_user["problems"][key_problem]["status"] = "Solved";
+
+        const result = await updateDocumentByKey("users", key_user, content_user);
+
+        const keys_and_objects_user2 = await getDocumentAndKeysByQuery('users', query_user);
+
+        if (result) {
+            res.status(200).json(keys_and_objects_user2[0][1]);
+        } else {
+            res.status(404).json("Something went wrong");
+        }
+
+
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' })
+    }
+})
+
+

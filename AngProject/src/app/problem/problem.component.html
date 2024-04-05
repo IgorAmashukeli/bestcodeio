@@ -73,7 +73,7 @@
           *ngIf="authService.loggedIn$ | async"
           style="width: 16.66667%; display: flex; align-items: center"
         >
-          <button class="submit-button">Submit</button>
+          <button class="submit-button" (click)="submit()">Submit</button>
         </div>
         <div
           *ngIf="!(authService.loggedIn$ | async)"
@@ -101,7 +101,12 @@
       <left-workspace [selectedNavItem]="selectedNavItem"></left-workspace>
     </as-split-area>
     <as-split-area size="50">
-      <right-workspace [selectedLanguage]="selectedLanguage"></right-workspace>
+      <right-workspace
+        [mathResponse]="math_response"
+        [OK]="OK"
+        [proof_loading]="proof_loading"
+        [selectedLanguage]="selectedLanguage"
+      ></right-workspace>
     </as-split-area>
   </as-split>
 </div>

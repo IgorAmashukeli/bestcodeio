@@ -44,6 +44,10 @@
                 <td
                   *ngIf="authService.loggedIn$ | async"
                   class="problems-not-solved"
+                  [ngClass]="{
+                    'problems-not-solved': user_statuses[i][0] == 'N',
+                    'problems-solved': user_statuses[i][0] == 'S'
+                  }"
                 >
                   {{ user_statuses[i] }}
                 </td>

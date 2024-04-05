@@ -13,6 +13,7 @@ import { CommonModule } from '@angular/common';
 import { MonacoService } from '../services/monaco.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../services/data.service';
+import { Observable, of } from 'rxjs';
 
 @Component({
   selector: 'right-workspace',
@@ -23,10 +24,14 @@ import { DataService } from '../services/data.service';
 })
 export class RightWorkSpaceComponent implements OnInit, OnChanges {
   @Input() selectedLanguage: string = '';
+  @Input() mathResponse: string = '';
+  @Input() OK: boolean = false;
+  @Input() proof_loading: Observable<boolean> = of(true);
   code_languages: Array<Array<string>> = [[]];
   initial_codes: any = {};
   initial_language: string = '';
   example_array: Array<string> = [];
+  course_type: boolean = false;
 
   previous_language: string = '';
   routeKey: string = '';
@@ -52,6 +57,7 @@ export class RightWorkSpaceComponent implements OnInit, OnChanges {
       const storedCodes = localStorage.getItem(this.routeKey);
       const splited: any = this.router.url.split('/');
       const course = splited[1];
+      this.course_type = course == 'math';
       const topic = splited[2];
       const problemId = +splited[3];
       this.dataService.fetchProblemData(course, topic, problemId).subscribe({

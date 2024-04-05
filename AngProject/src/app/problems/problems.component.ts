@@ -80,6 +80,7 @@ export class ProblemsComponent implements OnInit {
             },
           });
       } else {
+        this.user_statuses = [];
         this.dataService
           .fetchProblemsData(this.course_type, course_route)
           .subscribe({

@@ -27,8 +27,23 @@ export class DataService {
     return this.http.post<any>(url, {});
   }
 
-  fetchProblemsData(course: string, topic: string) {
+  fetchProblemsData(course: string, topic: string): Observable<any> {
     const url = `http://localhost:3000/get_problems/${course}/${topic}`;
     return this.http.get<any[]>(url);
+  }
+
+  submitMath(topic: string, id: string, code: string): Observable<any> {
+    const url = `http://localhost:3000/submit_math/${topic}/${id}`;
+    return this.http.post<any>(url, { code: code });
+  }
+
+  solveProblem(
+    user_id: string,
+    course: string,
+    topic: string,
+    id: string
+  ): Observable<any> {
+    const url = `http://localhost:3000/problem_solved/${user_id}/${course}/${topic}/${id}`;
+    return this.http.put<any>(url, {});
   }
 }

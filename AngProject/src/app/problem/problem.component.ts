@@ -32,6 +32,8 @@ import { WarningDialogComponent } from '../warning_dialog/warning_dialog.compone
 import { HttpClient } from '@angular/common/http';
 import { HttpClientModule } from '@angular/common/http';
 import { DataService } from '../services/data.service';
+import { Observable, firstValueFrom, of } from 'rxjs';
+import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-problem',
@@ -56,6 +58,8 @@ import { DataService } from '../services/data.service';
 export class ProblemComponent implements AfterContentChecked {
   @ViewChild('navigationBar', { static: true }) navigationBar!: ElementRef;
   @ViewChild('toolbar', { static: true }) toolbar!: ElementRef;
+  @ViewChild(RightWorkSpaceComponent)
+  rightWorkSpaceComponent!: RightWorkSpaceComponent;
 
   course_type: string = '';
   course_id: number = -1;
@@ -70,6 +74,9 @@ export class ProblemComponent implements AfterContentChecked {
   example_array: Array<string> = [];
   window_object: any;
   splitHeight: string = '0px';
+  math_response: string = '';
+  OK: boolean = false;
+  proof_loading: Observable<boolean> = of(true);
 
   assign_fields(problem: any): void {
     this.language_array = problem['languages'];
@@ -81,6 +88,7 @@ export class ProblemComponent implements AfterContentChecked {
 
   constructor(
     private router: Router,
+    private auth: Auth,
     private http: HttpClient,
     public authService: AuthService,
     public dialogService: DialogService,
@@ -138,5 +146,40 @@ export class ProblemComponent implements AfterContentChecked {
       WarningDialogComponent,
       button_type
     );
+  }
+
+  async submit() {
+    if (this.course_flag) {
+      this.proof_loading = of(false);
+      const code = this.rightWorkSpaceComponent.cur_code;
+      this.math_response = await firstValueFrom(
+        this.dataService.submitMath(
+          this.router.url.split('/')[2],
+          this.router.url.split('/')[3],
+          code
+        )
+      );
+      this.OK = this.math_response.startsWith('OK!');
+      if (this.OK) {
+        const user = this.auth.currentUser;
+        if (user) {
+          const result = await firstValueFrom(
+            this.dataService.solveProblem(
+              user.uid,
+              this.router.url.split('/')[1],
+              this.router.url.split('/')[2],
+              this.router.url.split('/')[3]
+            )
+          );
+        } else {
+          if (typeof window != undefined) {
+            alert(
+              'you logged out just after submitting, the status of the task is not updated'
+            );
+          }
+        }
+      }
+      this.proof_loading = of(true);
+    }
   }
 }

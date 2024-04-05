@@ -74,7 +74,7 @@ const first_problem_code: Array<string> = [
   'theorem conj_congr {p q r : Prop} : (p ↔ q) -> ((p ∧ r) ↔ (q ∧ r)) := by admit',
   'theorem impl_congr_right {p q r : Prop} : (p ↔ q) → ((p → r) ↔ (q → r)) := by admit',
   'theorem impl_congr_left {p q r : Prop} : (p ↔ q) → ((r → p) ↔ (r → q)) := by admit',
-  'theorem iff_congr {p q r : Prop} : (p ↔ q) → ((p ↔ r) ↔ (q ↔ r)) := by admit',
+  'theorem iff_congr_ {p q r : Prop} : (p ↔ q) → ((p ↔ r) ↔ (q ↔ r)) := by admit',
 
   'theorem iff_conj_intro{p q r : Prop} : (p ↔ q) → (p ↔ r) → (p ↔ (q ∧ r)) := by admit',
   'theorem iff_transitivity {p q r : Prop} : (p ↔ q) -> (q ↔ r) → (p ↔ r) := by admit',
