@@ -7,6 +7,7 @@ import {
   HostListener,
   Renderer2,
   ViewChild,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { AngularSplitModule } from 'angular-split';
 import { LeftWorkspaceComponent } from '../left-workspace/left-workspace.component';
@@ -77,6 +78,7 @@ export class ProblemComponent implements AfterContentChecked {
   math_response: string = '';
   OK: boolean = false;
   proof_loading: Observable<boolean> = of(true);
+  loading_submission = true;
 
   assign_fields(problem: any): void {
     this.language_array = problem['languages'];
@@ -92,7 +94,8 @@ export class ProblemComponent implements AfterContentChecked {
     private http: HttpClient,
     public authService: AuthService,
     public dialogService: DialogService,
-    public dataService: DataService
+    public dataService: DataService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   @HostListener('window:resize', ['$event'])
@@ -149,21 +152,23 @@ export class ProblemComponent implements AfterContentChecked {
   }
 
   async submit() {
+    this.loading_submission = false;
     if (this.course_flag) {
       this.proof_loading = of(false);
       const code = this.rightWorkSpaceComponent.cur_code;
-      this.math_response = await firstValueFrom(
+      const json_response = await firstValueFrom(
         this.dataService.submitMath(
           this.router.url.split('/')[2],
           this.router.url.split('/')[3],
           code
         )
       );
+      this.math_response = json_response['log'];
       this.OK = this.math_response.startsWith('OK!');
-      if (this.OK) {
-        const user = this.auth.currentUser;
-        if (user) {
-          const result = await firstValueFrom(
+      const user = this.auth.currentUser;
+      if (user) {
+        if (this.OK) {
+          const result1 = await firstValueFrom(
             this.dataService.solveProblem(
               user.uid,
               this.router.url.split('/')[1],
@@ -171,15 +176,30 @@ export class ProblemComponent implements AfterContentChecked {
               this.router.url.split('/')[3]
             )
           );
-        } else {
-          if (typeof window != undefined) {
-            alert(
-              'you logged out just after submitting, the status of the task is not updated'
-            );
-          }
         }
+
+        const result2 = await firstValueFrom(
+          this.dataService.addSubmissions(
+            {
+              code: json_response['code'],
+              time: json_response['time'],
+              status: json_response['status'],
+            },
+            user.uid,
+            this.router.url.split('/')[1],
+            this.router.url.split('/')[2],
+            this.router.url.split('/')[3]
+          )
+        );
+
+        this.loading_submission = true;
+        if (this.selectedNavItem == 'description_page') {
+          this.selectNavItem('submissions_page');
+        } else {
+        }
+
+        this.proof_loading = of(true);
       }
-      this.proof_loading = of(true);
     }
   }
 }

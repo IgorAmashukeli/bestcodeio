@@ -9,14 +9,19 @@
           height: 100%;
         "
       >
-        <ngx-monaco-editor
-          id="mon-editor"
-          style="height: 100vh; width: 100vw"
-          [options]="{
+        <ng-container *ngIf="this.authService.loggedIn$ | async">
+          <ngx-monaco-editor
+            id="mon-editor"
+            style="height: 100vh; width: 100vw"
+            [options]="{
             language: this.selectedLanguage,
           }"
-          [(ngModel)]="cur_code"
-        ></ngx-monaco-editor>
+            [(ngModel)]="cur_code"
+          ></ngx-monaco-editor>
+        </ng-container>
+        <ng-container *ngIf="!(this.authService.loggedIn$ | async)">
+          <div class="cls">To view code editor, please, sign in</div>
+        </ng-container>
       </div>
     </as-split-area>
     <as-split-area
@@ -134,13 +139,14 @@
           *ngIf="this.example_array.length == 0"
           style="display: flex; flex-direction: column"
         ></div>
-
-        <div
-          *ngIf="this.proof_loading | async"
-          [ngClass]="{ 'result-OK': OK, 'result-Error': !OK }"
-        >
-          {{ mathResponse }}
-        </div>
+        <ng-container *ngIf="this.authService.loggedIn$ | async">
+          <div
+            *ngIf="this.proof_loading | async"
+            [ngClass]="{ 'result-OK': OK, 'result-Error': !OK }"
+          >
+            {{ mathResponse }}
+          </div>
+        </ng-container>
       </ng-container>
     </as-split-area>
   </as-split>

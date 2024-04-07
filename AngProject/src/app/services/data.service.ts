@@ -46,4 +46,25 @@ export class DataService {
     const url = `http://localhost:3000/problem_solved/${user_id}/${course}/${topic}/${id}`;
     return this.http.put<any>(url, {});
   }
+
+  addSubmissions(
+    json_object: any,
+    user_id: string,
+    course: string,
+    topic: string,
+    id: string
+  ): Observable<any> {
+    const url = `http://localhost:3000/add_submissions/${user_id}/${course}/${topic}/${id}`;
+    return this.http.put<any>(url, json_object);
+  }
+
+  fetchSubmissions(
+    user_id: string,
+    course: string,
+    topic: string,
+    id: string
+  ): Observable<any> {
+    const url = `http://localhost:3000/get_submissions/${user_id}/${course}/${topic}/${id}`;
+    return this.http.get<any>(url);
+  }
 }

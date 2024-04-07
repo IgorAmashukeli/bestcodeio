@@ -66,7 +66,7 @@ async function runLEANContainer(data) {
 
                     await container.start();
 
-                    const result = await executeLeanCommand(code, required_theorems);
+                    const result = await executeLeanCommandWithTimeout(code, required_theorems, 1);
                     resolve(result);
                 } catch (error) {
                     console.error('Error creating or starting container:', error);
@@ -75,7 +75,7 @@ async function runLEANContainer(data) {
             } else {
                 try {
                     await container.restart();
-                    const result = await executeLeanCommand(code, required_theorems);
+                    const result = await executeLeanCommandWithTimeout(code, required_theorems, 1);
                     resolve(result);
                 } catch (error) {
                     console.error('Error restarting container:', error);
@@ -90,8 +90,6 @@ async function runLEANContainer(data) {
 function check_including(code, required_theorems) {
     for (const theorem of required_theorems) {
         if (!code.includes(theorem)) {
-            console.log(code)
-            console.log(theorem)
             some_theorems = theorem;
             return false;
         }
@@ -101,10 +99,28 @@ function check_including(code, required_theorems) {
 }
 
 
-async function executeLeanCommand(code, required_theorems) {
+function getTime() {
+    var currentDate = new Date();
+
+    var year = currentDate.getFullYear();
+    var month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+    var day = currentDate.getDate().toString().padStart(2, '0');
+
+    var hours = currentDate.getHours().toString().padStart(2, '0');
+    var minutes = currentDate.getMinutes().toString().padStart(2, '0');
+    var seconds = currentDate.getSeconds().toString().padStart(2, '0');
+
+    var currentDateTime = year + "-" + month + "-" + day + " " + hours + ":" + minutes + ":" + seconds;
+
+    return currentDateTime;
+}
+
+
+async function executeLeanCommandWithTimeout(code, required_theorems, timeoutSeconds) {
     return new Promise((resolve, reject) => {
+        const command = ['sh', '-c', `output=$(timeout ${timeoutSeconds}s lean /data/test.lean; timeout_exit_code=$?; if [ $timeout_exit_code -eq 124 ]; then echo "TIMEOUT"; fi); echo "$output"`];
         container.exec({
-            Cmd: ['lean', '/data/test.lean'],
+            Cmd: command,
             AttachStdout: true,
             AttachStderr: true
         }, function (err, exec) {
@@ -127,30 +143,29 @@ async function executeLeanCommand(code, required_theorems) {
                     leanOutput += chunk.toString();
                 });
 
-                console.log(leanOutput);
 
                 stream.on('end', function () {
-                    let result;
-
-                    if (leanOutput.includes('error')) {
-                        result = 'Wrong Proof:' + leanOutput.trim();
-                    }
-                    else if (leanOutput.includes('sorry')) {
-                        result = 'Missing Proof:' + leanOutput.trim();
+                    if (leanOutput.replace(/[^\x20-\x7E]/g, "").replace(/\s/g, "") === "TIMEOUT") {
+                        resolve({ "status": 'TL', "log": 'Time Limit Exceeded' });
                     } else {
-                        if (check_including(code, required_theorems)) {
-                            result = 'OK! All theorems are proved';
+                        if (leanOutput.includes('error')) {
+                            resolve({ "status": 'WP', "log": 'Wrong Proof:' + leanOutput.trim() });
+                        } else if (leanOutput.includes('sorry')) {
+                            resolve({ "status": 'MP', "log": 'Missing Proof:' + leanOutput.trim() });
                         } else {
-                            result = 'Missing Proof: No "' + some_theorems + '" found';
+                            if (check_including(code, required_theorems)) {
+                                resolve({ "status": 'OK', "log": 'OK! All theorems are proved' });
+                            } else {
+                                resolve({ "status": 'MP', "log": 'Missing Proof: No "' + some_theorems + '" found' });
+                            }
                         }
                     }
-
-                    resolve(result);
                 });
             });
         });
     });
 }
+
 
 
 
@@ -482,6 +497,7 @@ async function updateDocumentByKey(collection_name, key, updatedContent) {
 }
 
 
+
 app.get('/get_problems/:course/:topic', async (req, res) => {
     try {
         const course = req.params.course;
@@ -506,6 +522,11 @@ app.post('/submit_math/:topic/:problem_id', async (req, res) => {
         const problem = await getDocumentsByQuery("mycollection", query);
         const requirements = problem[0]['requirements'];
         const result = await runLEANContainer({ "code": code["code"], "required_theorems": requirements });
+
+
+        result['time'] = getTime()
+        result['code'] = code["code"];
+
         res.status(200).json(result);
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });
@@ -534,10 +555,8 @@ app.put('/problem_solved/:user_id/:course/:topic/:problem_id', async (req, res) 
 
         const result = await updateDocumentByKey("users", key_user, content_user);
 
-        const keys_and_objects_user2 = await getDocumentAndKeysByQuery('users', query_user);
-
         if (result) {
-            res.status(200).json(keys_and_objects_user2[0][1]);
+            res.status(200).json("OK");
         } else {
             res.status(404).json("Something went wrong");
         }
@@ -548,4 +567,96 @@ app.put('/problem_solved/:user_id/:course/:topic/:problem_id', async (req, res) 
     }
 })
 
+
+
+app.put('/add_submissions/:user_id/:course/:topic/:problem_id', async (req, res) => {
+    try {
+        const json_object = req.body;
+
+        const user_id = req.params.user_id;
+        const course = req.params.course;
+        const topic = req.params.topic;
+        const problem_id = req.params.problem_id;
+
+        const query_problem = { "id": parseInt(problem_id), "course": '/' + course + '/' + topic };
+        const keys_problem = await getDocumentKeysByQuery('mycollection', query_problem);
+        const key_problem = keys_problem[0];
+
+        const query_user = { "user_id": user_id };
+        const keys_and_objects_user = await getDocumentAndKeysByQuery('users', query_user);
+        const key_and_objects_user = keys_and_objects_user[0]
+        const key_user = key_and_objects_user[0]
+        let content_user = key_and_objects_user[1];
+
+
+
+        if ((content_user["problems"][key_problem]["last solutions"]).length < 3) {
+
+            content_user["problems"][key_problem]["last solutions"].push(json_object);
+
+            const result = await updateDocumentByKey("users", key_user, content_user);
+
+            if (result) {
+                res.status(200).json(content_user);
+            } else {
+                res.status(404).json("Something went wrong");
+            }
+
+
+
+
+        } else if (content_user["problems"][key_problem]["last solutions"].length == 3) {
+
+
+            content_user["problems"][key_problem]["last solutions"] = [
+                content_user["problems"][key_problem]["last solutions"][1],
+                content_user["problems"][key_problem]["last solutions"][2],
+                json_object
+            ]
+
+            const result = await updateDocumentByKey("users", key_user, content_user);
+
+            if (result) {
+                res.status(200).json(content_user);
+            } else {
+                res.status(404).json("Something went wrong");
+            }
+
+
+
+        } else {
+            res.status(404).json("Something went wrong")
+        }
+
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+})
+
+
+
+app.get('/get_submissions/:user_id/:course/:topic/:problem_id', async (req, res) => {
+    try {
+        const user_id = req.params.user_id;
+        const course = req.params.course;
+        const topic = req.params.topic;
+        const problem_id = req.params.problem_id;
+
+        const query_problem = { "id": parseInt(problem_id), "course": '/' + course + '/' + topic };
+        const keys_problem = await getDocumentKeysByQuery('mycollection', query_problem);
+        const key_problem = keys_problem[0];
+
+        const query_user = { "user_id": user_id };
+        const keys_and_objects_user = await getDocumentAndKeysByQuery('users', query_user);
+        const key_and_objects_user = keys_and_objects_user[0]
+        const content_user = key_and_objects_user[1];
+
+        const result = content_user["problems"][key_problem]["last solutions"];
+
+
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+})
 

@@ -14,6 +14,7 @@ import { MonacoService } from '../services/monaco.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../services/data.service';
 import { Observable, of } from 'rxjs';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'right-workspace',
@@ -27,6 +28,7 @@ export class RightWorkSpaceComponent implements OnInit, OnChanges {
   @Input() mathResponse: string = '';
   @Input() OK: boolean = false;
   @Input() proof_loading: Observable<boolean> = of(true);
+
   code_languages: Array<Array<string>> = [[]];
   initial_codes: any = {};
   initial_language: string = '';
@@ -39,7 +41,11 @@ export class RightWorkSpaceComponent implements OnInit, OnChanges {
   selectedCase: number = 0;
 
   cur_code: string = this.initial_codes[this.initial_language];
-  constructor(private router: Router, private dataService: DataService) {
+  constructor(
+    private router: Router,
+    private dataService: DataService,
+    public authService: AuthService
+  ) {
     this.routeKey = this.router.url;
   }
 

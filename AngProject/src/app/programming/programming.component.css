@@ -11,6 +11,16 @@
   text-align: center;
   margin-bottom: 10px;
   font-size: 5rem;
+  width: 100%;
+}
+
+.image-button {
+  height: 50px;
+  cursor: pointer;
+}
+
+.table-header {
+  width: 33%;
 }
 
 .container {

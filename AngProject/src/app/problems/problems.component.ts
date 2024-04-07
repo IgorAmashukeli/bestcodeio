@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
@@ -40,7 +40,8 @@ export class ProblemsComponent implements OnInit {
     private dialogService: DialogService,
     public authService: AuthService,
     public auth: Auth,
-    private dataService: DataService
+    private dataService: DataService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -72,10 +73,12 @@ export class ProblemsComponent implements OnInit {
               });
 
               this.problemArray = problem;
+              this.cdr.detectChanges();
               this.loading = of(true);
             },
             error: (error: any) => {
               console.error('Error fetching problem:', error);
+              this.cdr.detectChanges();
               this.loading = of(true);
             },
           });
@@ -86,6 +89,7 @@ export class ProblemsComponent implements OnInit {
           .subscribe({
             next: (problem: any[]) => {
               this.problemArray = problem;
+              this.cdr.detectChanges();
               this.loading = of(true);
             },
             error: (error: any) => {
@@ -114,6 +118,7 @@ export class ProblemsComponent implements OnInit {
           if (status) {
             this.user_statuses.push(status);
           }
+          this.cdr.detectChanges();
           this.loading = of(true);
         });
       },

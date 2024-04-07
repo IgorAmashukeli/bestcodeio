@@ -138,6 +138,36 @@ async function deleteDocumentByKey(collectionName, key) {
 }
 
 
+async function getTotalDataSize(collection_names) {
+    try {
+
+        let totalSize = 0;
+
+        for (let collection_name of collection_names) {
+            const soda = connection.getSodaDatabase();
+            const collection = await soda.openCollection(collection_name);
+
+
+            const documents = await collection.find().getDocuments();
+
+            for (let doc of documents) {
+                const size = JSON.stringify(doc.getContent()).length;
+                totalSize += size;
+            }
+        }
+
+
+        console.log(totalSize / 1024, "Kb");
+
+        return totalSize;
+    } catch (err) {
+        console.error(err);
+        return -1;
+    }
+}
+
+
+
 function add_lines(array_str) {
     return array_str.join('\n\n');
 }
@@ -162,22 +192,18 @@ const document = {
         '\t<b><b>Input</b></b>: n = 2, k = 2<br>\t<b><b>Output</b></b>: 4<br>',
         '\t<b><b>Input</b></b>: n = 3, k = 3<br>\t<b><b>Output</b></b>: 6<br>',
     ],
-    constraints: ['1 <= n <= 3', '2 <= k <= 4'],
+    constraints: ['1 <= n <= 100', '1 <= k <= 100'],
     note: '<b><b>Follow up</b></b>: Can you do it in <b>O(1)</b>?',
     languages: [
-        ['C++', 'cpp'],
-        ['Python', 'python'],
-        ['JavaScript', 'javascript'],
-        ['Java', 'java'],
+        ['C++', 'cpp']
     ],
     initial_codes: {
-        cpp: '#include <iostream>\n\nint summa(int n, int k) {\n    // your code here\n}\n\nint main() {\n    // your code here\n}',
-        python: '#your code here:\ndef my_function(n, k):\n    return 0',
-        javascript:
-            '//your code here\nfunction myFunction(n, k) {\n\n    return 0;\n}',
-        java: '//your code here\npublic class MyClass {\n    public static void myFunction(int n, int k) {\n        // Your Java code here\n        return 0;\n    }\n\n    public static void main(String[] args) {}\n}',
+        cpp: '#include <iostream>\n\nint summa(int n, int k) {\n    // your code here\n}'
     },
     initial_language: 'cpp',
+    run_code: '\n\nint main() {\n  if (summa(1, 2) != 3) {\n    std::cout << "WA!\\n";\n  } else if (summa(2, 2) != 4) {\n    std::cout << "WA!\\n";\n  } else if (summa(3, 3) != 6) {\n    std::cout << "WA!\\n";\n  } else {\n    std::cout << "OK!\\n";\n  }\n}',
+    submit_code: '\n\nint main() {\n  for (size_t i = 0; i < 100; ++i) {\n    for (size_t j = 0; j < 100; ++j) {\n      if (summa(i, j) != i + j) {\n        std::cout << "WA!\\n";\n      }\n    }\n  }\n  std::cout << "OK!\\n";\n}'
+
 }
 
 async function closeConnection() {
@@ -526,12 +552,10 @@ async function updateDocumentByKey(collection_name, key, updatedContent) {
 
 connectToDatabase()
     .then(async () => {
-        await getAllDocumentsWithKeys('users')
         await closeConnection();
     })
     .catch(err => {
         console.error(err);
     });
-
 
 
