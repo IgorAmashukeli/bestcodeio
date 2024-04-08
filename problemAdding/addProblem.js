@@ -201,8 +201,8 @@ const document = {
         cpp: '#include <iostream>\n\nint summa(int n, int k) {\n    // your code here\n}'
     },
     initial_language: 'cpp',
-    run_code: '\n\nint main() {\n  if (summa(1, 2) != 3) {\n    std::cout << "WA!\\n";\n  } else if (summa(2, 2) != 4) {\n    std::cout << "WA!\\n";\n  } else if (summa(3, 3) != 6) {\n    std::cout << "WA!\\n";\n  } else {\n    std::cout << "OK!\\n";\n  }\n}',
-    submit_code: '\n\nint main() {\n  for (size_t i = 0; i < 100; ++i) {\n    for (size_t j = 0; j < 100; ++j) {\n      if (summa(i, j) != i + j) {\n        std::cout << "WA!\\n";\n      }\n    }\n  }\n  std::cout << "OK!\\n";\n}'
+    run_code: '\n\nint main() {\n  if (summa(1, 2) != 3) {\n    std::cout << "WA!\\n";\nreturn 0;\n  } else if (summa(2, 2) != 4) {\n    std::cout << "WA!\\n"; return 0;\n  } else if (summa(3, 3) != 6) {\n    std::cout << "WA!\\n"; return 0;\n  } else {\n    std::cout << "OK!\\n";\n  }\n}',
+    submit_code: '\n\nint main() {\n  for (int i = 0; i < 100; ++i) {\n    for (int j = 0; j < 100; ++j) {\n      if (summa(i, j) != i + j) {\n        std::cout << "WA! input: " << i << " " << j << "\\n"\n                  << "correct output: " << i + j\n                  << " your output: " << summa(i, j) << "\\n";\n        return 0;\n      }\n    }\n  }\n  std::cout << "OK!"\n            << "\\n";\n}'
 
 }
 
@@ -552,6 +552,7 @@ async function updateDocumentByKey(collection_name, key, updatedContent) {
 
 connectToDatabase()
     .then(async () => {
+        await updateDocumentByKey('mycollection', '11C0DB08DA2E4F63BFD95A3F87D0D7F2', document)
         await closeConnection();
     })
     .catch(err => {

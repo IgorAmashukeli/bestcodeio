@@ -170,6 +170,151 @@ async function executeLeanCommandWithTimeout(code, required_theorems, timeoutSec
 
 
 
+
+async function runCppContainer(data) {
+    code = data["code"]
+    extra_flag = data["extra_flag"]
+
+    fs.writeFileSync(`${volumePath}/test.cpp`, code);
+
+    return new Promise((resolve, reject) => {
+        checkContainersForImage('gcc', async function (err, containerExists) {
+            if (err) {
+                console.error('Error checking containers for image:', err);
+                reject(err);
+                return;
+            }
+
+            if (!containerExists) {
+                try {
+                    const newContainer = await docker.createContainer({
+                        Image: 'gcc',
+                        Tty: true,
+                        AttachStdout: true,
+                        AttachStderr: true,
+                        HostConfig: {
+                            Binds: [`${volumePath}:${containerPath}`],
+                        },
+                    });
+
+                    container = newContainer;
+
+                    await container.start();
+
+                    const result = await compileCppCommand(extra_flag);
+                    resolve(result);
+                } catch (error) {
+                    console.error('Error creating or starting container:', error);
+                    reject(error);
+                }
+            } else {
+                try {
+                    await container.restart();
+                    const result = await compileCppCommand(extra_flag);
+                    resolve(result);
+                } catch (error) {
+                    console.error('Error restarting container:', error);
+                    reject(error);
+                }
+            }
+        });
+    });
+}
+
+
+
+
+
+async function compileCppCommand(extra_flag) {
+    return new Promise((resolve, reject) => {
+        const command = ['sh', '-c', `g++ --std=c++20 -Wall -Wextra -Werror ${extra_flag} /data/test.cpp`];
+        container.exec({
+            Cmd: command,
+            AttachStdout: true,
+            AttachStderr: true
+        }, function (err, exec) {
+            if (err) {
+                console.error('Error compiling c++ code:', err);
+                reject(err);
+                return;
+            }
+
+            exec.start(function (err, stream) {
+                if (err) {
+                    console.error('Error compiling c++ code:', err);
+                    reject(err);
+                    return;
+                }
+
+                let compileCppCommand = '';
+
+                stream.on('data', function (chunk) {
+                    compileCppCommand += chunk.toString();
+                });
+
+
+                stream.on('end', function () {
+                    resolve({ 'compile_logs': compileCppCommand });
+                });
+            });
+        });
+    });
+}
+
+
+
+async function executeCppCommandWithTimeout(code, timeoutSeconds) {
+    return new Promise((resolve, reject) => {
+        const command = ['sh', '-c', `output=$(timeout ${timeoutSeconds}s ./a.out; timeout_exit_code=$?; if [ $timeout_exit_code -eq 124 ]; then echo "TIMEOUT"; fi); echo "$output"`];
+        container.exec({
+            Cmd: command,
+            AttachStdout: true,
+            AttachStderr: true
+        }, function (err, exec) {
+            if (err) {
+                console.error('Error executing cpp code:', err);
+                reject(err);
+                return;
+            }
+
+            exec.start(function (err, stream) {
+                if (err) {
+                    console.error('Error starting cpp code:', err);
+                    reject(err);
+                    return;
+                }
+
+                let cppOutput = '';
+
+                stream.on('data', function (chunk) {
+                    cppOutput += chunk.toString();
+                });
+
+
+                stream.on('end', function () {
+                    if (cppOutput.replace(/[^\x20-\x7E]/g, "").replace(/\s/g, "") === "TIMEOUT") {
+                        resolve({ "status": 'TL', "log": 'Time Limit Exceeded' });
+                    } else {
+                        if (cppOutput.includes('WA')) {
+                            resolve({ "status": 'WA', "log": 'Wrong Solution: ' + cppOutput.trim() });
+                        } else if (cppOutput.includes('OK')) {
+                            resolve({ "status": 'OK', "log": 'OK! All testcases passed' });
+                        } else {
+                            resolve({ "status": 'RE', "log": 'RE' + cppOutput.trim() })
+                        }
+                    }
+                });
+            });
+        });
+    });
+}
+
+
+
+
+
+
+
 if (process.platform === 'linux') {
     oracledb.initOracleClient({
         libDir: '/opt/oracle/instantclient_21_13',
@@ -660,3 +805,59 @@ app.get('/get_submissions/:user_id/:course/:topic/:problem_id', async (req, res)
     }
 })
 
+
+
+
+app.post('/run_programming/:topic/:problem_id', async (req, res) => {
+    try {
+        const code = req.body;
+        const topic = req.params.topic;
+        const problemId = req.params.problem_id;
+
+        const query = { "id": parseInt(problemId), "course": '/' + 'programming' + '/' + topic };
+        const problem = await getDocumentsByQuery("mycollection", query);
+        const run_adding = problem[0]['run_code'];
+        const run_code = code["code"] + run_adding;
+
+
+        const compile_result = await runCppContainer({ "code": run_code, "extra_flag": "-fsanitize=address" });
+        const logs = compile_result["compile_logs"];
+        if (logs != '') {
+            res.status(200).json(logs);
+        } else {
+            const result = await executeCppCommandWithTimeout(run_code, 1);
+            res.status(200).json(result);
+        }
+
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+})
+
+
+
+app.post('/submit_programming/:topic/:problem_id', async (req, res) => {
+    try {
+
+        const code = req.body;
+        const topic = req.params.topic;
+        const problemId = req.params.problem_id;
+
+        const query = { "id": parseInt(problemId), "course": '/' + 'programming' + '/' + topic };
+        const problem = await getDocumentsByQuery("mycollection", query);
+        const submit_adding = problem[0]['submit_code'];
+        const submit_code = code["code"] + submit_adding;
+
+        const compile_result = await runCppContainer({ "code": submit_code, "extra_flag": "-fsanitize=address" });
+        const logs = compile_result["compile_logs"];
+        if (logs != '') {
+            res.status(200).json(logs);
+        } else {
+            const result = await executeCppCommandWithTimeout(submit_code, 1);
+            res.status(200).json(result);
+        }
+
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+})
