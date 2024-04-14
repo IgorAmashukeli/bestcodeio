@@ -70,9 +70,6 @@ export class RightWorkSpaceComponent implements OnInit, OnChanges {
         next: (problem: any[]) => {
           this.assign_fields(problem[0]);
           const storedCodes = localStorage.getItem(this.routeKey);
-          this.initial_codes = storedCodes
-            ? JSON.parse(storedCodes)
-            : this.initial_codes;
           this.cur_code = this.initial_codes[this.initial_language];
 
           window.addEventListener(

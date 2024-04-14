@@ -14,7 +14,7 @@ import { math_indices, programming_indices } from '../app.routes';
 import { Problem } from '../problem_list/problem_list';
 import { NavigationBarComponent } from '../navigation_bar/navigation_bar.component';
 import { DataService } from '../services/data.service';
-import { Observable, Subscription, of } from 'rxjs';
+import { Observable, Subject, Subscription, of } from 'rxjs';
 import { Auth, Unsubscribe, User } from '@angular/fire/auth';
 
 @Component({
@@ -31,6 +31,7 @@ export class ProblemsComponent implements OnInit {
   course_flag: boolean = true;
   problemArray: Array<any> = [];
   loading: Observable<boolean> = of(false);
+  loading$ = new Subject<boolean>();
   user_statuses: Array<string> = [];
   authStateChangedSubscription!: Unsubscribe;
 
@@ -44,11 +45,16 @@ export class ProblemsComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
+  
+
+
+
+  ngOnInit() {
     this.course_type = this.router.url.split('/')[1];
     const course_route: string = this.router.url.split('/')[2];
     this.course_flag = this.course_type === 'math';
     this.course_title = this.route.snapshot.data['title'];
+    this.loading$.next(true);
     this.auth.onAuthStateChanged((user) => {
       if (user) {
         this.dataService
@@ -57,14 +63,17 @@ export class ProblemsComponent implements OnInit {
             next: (problem: any[]) => {
               this.dataService.fetchUserData(user.uid).subscribe({
                 next: (usersInfo: any[]) => {
-                  const user_problems = usersInfo[0]['problems'];
-                  problem.forEach((item) => {
+                  if (typeof usersInfo !== 'undefined') {
+                    const user_problems = usersInfo[0]['problems'];
+                    problem.forEach((item) => {
                     const key = item.key;
                     const status = user_problems[key]?.status;
                     if (status) {
                       this.user_statuses.push(status);
                     }
                   });
+                  }
+                  
                 },
 
                 error: (error: any) => {
@@ -74,15 +83,16 @@ export class ProblemsComponent implements OnInit {
 
               this.problemArray = problem;
               this.cdr.detectChanges();
-              this.loading = of(true);
+              this.loading$.next(false);
             },
             error: (error: any) => {
               console.error('Error fetching problem:', error);
               this.cdr.detectChanges();
-              this.loading = of(true);
+              this.loading$.next(false);
             },
           });
       } else {
+        this.loading$.next(true);
         this.user_statuses = [];
         this.dataService
           .fetchProblemsData(this.course_type, course_route)
@@ -90,11 +100,11 @@ export class ProblemsComponent implements OnInit {
             next: (problem: any[]) => {
               this.problemArray = problem;
               this.cdr.detectChanges();
-              this.loading = of(true);
+              this.loading$.next(false);
             },
             error: (error: any) => {
               console.error('Error fetching problem:', error);
-              this.loading = of(true);
+              this.loading$.next(false);
             },
           });
       }
@@ -102,25 +112,28 @@ export class ProblemsComponent implements OnInit {
 
     this.authStateChangedSubscription = this.auth.onAuthStateChanged((user) => {
       if (user) {
-        this.loading = of(false);
-        this.fetchUserInfoHelper(user);
+        this.loading$.next(true);
+        this.helper(user);
+      } else {
+        this.loading$.next(false);
       }
     });
   }
 
-  fetchUserInfoHelper(user: User) {
+  helper(user : User) {
     this.dataService.fetchUserData(user.uid).subscribe({
       next: (usersInfo: any[]) => {
-        const user_problems = usersInfo[0]['problems'];
-        this.problemArray.forEach((item) => {
-          const key = item.key;
-          const status = user_problems[key]?.status;
-          if (status) {
-            this.user_statuses.push(status);
-          }
-          this.cdr.detectChanges();
-          this.loading = of(true);
-        });
+        if (typeof usersInfo !== 'undefined') {
+          const user_problems = usersInfo[0]['problems'];
+          this.problemArray.forEach((item) => {
+            const key = item.key;
+            const status = user_problems[key]?.status;
+            if (status) {
+              this.user_statuses.push(status);
+            }
+            this.loading$.next(false);
+          });
+        }
       },
 
       error: (error: any) => {
@@ -128,6 +141,7 @@ export class ProblemsComponent implements OnInit {
       },
     });
   }
+
 
   openSolutionDialog(video_id: string = 'y3svPgyGnLc') {
     this.dialogService.openDialog('1200px', '700px', SolutionDialogComponent, {

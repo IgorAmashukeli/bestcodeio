@@ -64,7 +64,7 @@ async function getAllDocumentsWithKeys(collectionName) {
                     content: doc.getContent()
                 };
             });
-            console.log("All documents with keys retrieved successfully:", allDocuments);
+            console.log("All documents with keys retrieved successfully:", allDocuments[0]['content']['problems']);
             return allDocuments;
         } else {
             console.log("No documents found in the collection.");
@@ -75,6 +75,35 @@ async function getAllDocumentsWithKeys(collectionName) {
         return null;
     }
 }
+
+
+async function updateUserProblems(newProblem) {
+    try {
+        const soda = connection.getSodaDatabase();
+
+        collection = await soda.openCollection('users');
+
+        let docs = await collection.find().getDocuments();
+
+        for (let doc of docs) {
+            
+            let content = doc.getContent()
+            let key = doc.key;
+            content['problems'][newProblem] = {'status' : 'Not solved', 'last solutions' : []};
+            
+            await updateDocumentByKey('users', key, content);
+
+        }
+
+        let docs2 = await collection.find().getDocuments();
+        
+
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
+
 
 
 async function getAllDocumentKeys() {
@@ -314,212 +343,7 @@ async function getDocumentKeysByQuery(collection_name, query) {
     }
 }
 
-const first_problem_code = [
-    '--your proof goes here',
 
-    'theorem neg_true : ¬ True ↔ False := sorry',
-    'theorem neg_false : ¬ False ↔ True := sorry',
-
-    'theorem conj_true (p : Prop) : p ∧ True ↔ p := sorry',
-    'theorem conj_false (p : Prop) : p ∧ False ↔ False := sorry',
-
-    'theorem disj_true (p : Prop) : p ∨ True ↔ True := sorry',
-    'theorem disj_false (p : Prop) : p ∨ False ↔ p := sorry',
-
-    'theorem impl_true (p : Prop) : p → True ↔ True := sorry',
-    'theorem true_impl (p : Prop) : True → p ↔ p := sorry',
-    'theorem impl_false (p : Prop) : p → False ↔ ¬ p := sorry',
-    'theorem false_impl (p : Prop) : False → p ↔ True := sorry',
-
-    'theorem axiomatic_rule (p : Prop) : p → p := sorry',
-    'theorem trivial_equivalence (p : Prop) : p ↔ p := sorry',
-
-    'theorem conj_idemp (p : Prop) : p ↔ p ∧ p := sorry',
-    'theorem disj_idemp (p : Prop) : p ↔ p ∨ p := sorry',
-
-    'theorem conj_comm (p q : Prop) : (p ∧ q) ↔ (q ∧ p) := sorry',
-    'theorem disj_comm (p q : Prop) : (p ∨ q) ↔ (q ∨ p) := sorry',
-    'theorem impl_comm (p q : Prop) : (p ↔ q) ↔ (q ↔ p) := sorry',
-
-    'theorem conj_assoc (p q r : Prop) : (p ∧ q) ∧ r ↔ p ∧ (q ∧ r) := sorry',
-    'theorem disj_assoc (p q r : Prop) : (p ∨ q) ∨ r ↔ p ∨ (q ∨ r) := sorry',
-
-    'theorem conj_disj_distrib (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := sorry',
-    'theorem disj_conj_distrib (p q r : Prop) : p ∨ (q ∧ r) ↔ (p ∨ q) ∧ (p ∨ r) := sorry',
-
-    'theorem morgan_disj (p q : Prop) :  ¬(p ∨ q) ↔ ¬p ∧ ¬q := sorry',
-    'theorem morgan_conj_mpr (p q : Prop) : ¬p ∨ ¬q → ¬(p ∧ q) := sorry',
-
-    'theorem impl_def_mpr (p q : Prop) : (¬p ∨ q) → (p → q) := sorry',
-    'theorem neg_imp_def_mpr (p q : Prop) : p ∧ ¬q → ¬(p → q) := sorry',
-    'theorem neg_to_impl (p q : Prop) : ¬p → (p → q) := sorry',
-    'theorem contraposition_mp (p q : Prop) : (p → q) → (¬q → ¬p) := sorry',
-
-    'theorem exportation_law (p q r : Prop) : (p → (q → r)) ↔ (p ∧ q → r) := sorry',
-
-    'theorem cases_impl_left (p q r : Prop) : ((p ∨ q) → r) ↔ (p → r) ∧ (q → r) := sorry',
-
-    'theorem syllogism (p q r : Prop) : (p → q) → (q → r) → (p → r) := sorry',
-
-    'theorem disj_congr (p q r : Prop) : (p ↔ q) → ((p ∨ r) ↔ (q ∨ r)) := sorry',
-    'theorem conj_congr (p q r : Prop) : (p ↔ q) → ((p ∧ r) ↔ (q ∧ r)) := sorry',
-    'theorem impl_congr_right (p q r : Prop) : (p ↔ q) → ((p → r) ↔ (q → r)) := sorry',
-    'theorem impl_congr_left (p q r : Prop) : (p ↔ q) → ((r → p) ↔ (r → q)) := sorry',
-    'theorem iff_congr_ (p q r : Prop) : (p ↔ q) → ((p ↔ r) ↔ (q ↔ r)) := sorry',
-
-    'theorem iff_conj_intro(p q r : Prop) : (p ↔ q) → (p ↔ r) → (p ↔ (q ∧ r)) := sorry',
-    'theorem iff_transitivity (p q r : Prop) : (p ↔ q) → (q ↔ r) → (p ↔ r) := sorry',
-
-    'theorem no_contradiction (p : Prop) : ¬ (p ∧ ¬ p) := sorry',
-
-    'theorem double_negation_mp (p : Prop) : p → ¬¬ p := sorry',
-
-    'theorem negation_not_equiv (p : Prop) : ¬(p ↔ ¬p) := sorry',
-
-    'open Classical',
-
-    'theorem double_negation (p : Prop) : p ↔ ¬¬p := sorry',
-
-    'theorem tnd (p : Prop) : p ∨ ¬ p := sorry',
-
-    'theorem cases_analysis (p q : Prop) : (p → q) → (¬p → q) → q := sorry',
-
-    'theorem cases_impl_right (p q r : Prop) : (p → q ∨ r) → ((p → q) ∨ (p → r)) := sorry',
-
-    'theorem Morgan_disj (p q : Prop) : ¬ (p ∧ q) ↔ ¬p ∨ ¬q := sorry',
-
-    'theorem neg_imp_def (p q : Prop) :  ¬ (p → q) ↔ p ∧ ¬ q := sorry',
-    'theorem imp_def (p q : Prop) : (p → q) ↔ (¬p ∨ q) := sorry',
-    'theorem contraposition (p q : Prop) : (p → q) ↔ (¬q → ¬p) := sorry',
-
-    'theorem peirce (p q : Prop) : (((p → q) → p) → p) := sorry',
-];
-
-
-const first_requirements = [
-    'theorem neg_true : ¬ True ↔ False',
-    'theorem neg_false : ¬ False ↔ True',
-
-    'theorem conj_true (p : Prop) : p ∧ True ↔ p',
-    'theorem conj_false (p : Prop) : p ∧ False ↔ False',
-
-    'theorem disj_true (p : Prop) : p ∨ True ↔ True',
-    'theorem disj_false (p : Prop) : p ∨ False ↔ p',
-
-    'theorem impl_true (p : Prop) : p → True ↔ True',
-    'theorem true_impl (p : Prop) : True → p ↔ p',
-    'theorem impl_false (p : Prop) : p → False ↔ ¬ p',
-    'theorem false_impl (p : Prop) : False → p ↔ True',
-
-    'theorem axiomatic_rule (p : Prop) : p → p',
-    'theorem trivial_equivalence (p : Prop) : p ↔ p',
-
-    'theorem conj_idemp (p : Prop) : p ↔ p ∧ p',
-    'theorem disj_idemp (p : Prop) : p ↔ p ∨ p',
-
-    'theorem conj_comm (p q : Prop) : (p ∧ q) ↔ (q ∧ p)',
-    'theorem disj_comm (p q : Prop) : (p ∨ q) ↔ (q ∨ p)',
-    'theorem impl_comm (p q : Prop) : (p ↔ q) ↔ (q ↔ p)',
-
-    'theorem conj_assoc (p q r : Prop) : (p ∧ q) ∧ r ↔ p ∧ (q ∧ r)',
-    'theorem disj_assoc (p q r : Prop) : (p ∨ q) ∨ r ↔ p ∨ (q ∨ r)',
-
-    'theorem conj_disj_distrib (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r)',
-    'theorem disj_conj_distrib (p q r : Prop) : p ∨ (q ∧ r) ↔ (p ∨ q) ∧ (p ∨ r)',
-
-    'theorem morgan_disj (p q : Prop) :  ¬(p ∨ q) ↔ ¬p ∧ ¬q',
-    'theorem morgan_conj_mpr (p q : Prop) : ¬p ∨ ¬q → ¬(p ∧ q)',
-
-    'theorem impl_def_mpr (p q : Prop) : (¬p ∨ q) → (p → q)',
-    'theorem neg_imp_def_mpr (p q : Prop) : p ∧ ¬q → ¬(p → q)',
-    'theorem neg_to_impl (p q : Prop) : ¬p → (p → q)',
-    'theorem contraposition_mp (p q : Prop) : (p → q) → (¬q → ¬p)',
-
-    'theorem exportation_law (p q r : Prop) : (p → (q → r)) ↔ (p ∧ q → r)',
-
-    'theorem cases_impl_left (p q r : Prop) : ((p ∨ q) → r) ↔ (p → r) ∧ (q → r)',
-
-    'theorem syllogism (p q r : Prop) : (p → q) → (q → r) → (p → r)',
-
-    'theorem disj_congr (p q r : Prop) : (p ↔ q) → ((p ∨ r) ↔ (q ∨ r))',
-    'theorem conj_congr (p q r : Prop) : (p ↔ q) → ((p ∧ r) ↔ (q ∧ r))',
-    'theorem impl_congr_right (p q r : Prop) : (p ↔ q) → ((p → r) ↔ (q → r))',
-    'theorem impl_congr_left (p q r : Prop) : (p ↔ q) → ((r → p) ↔ (r → q))',
-    'theorem iff_congr_ (p q r : Prop) : (p ↔ q) → ((p ↔ r) ↔ (q ↔ r))',
-
-    'theorem iff_conj_intro(p q r : Prop) : (p ↔ q) → (p ↔ r) → (p ↔ (q ∧ r))',
-    'theorem iff_transitivity (p q r : Prop) : (p ↔ q) → (q ↔ r) → (p ↔ r)',
-
-    'theorem no_contradiction (p : Prop) : ¬ (p ∧ ¬ p)',
-
-    'theorem negation_not_equiv (p : Prop) : ¬(p ↔ ¬p)',
-    'theorem double_negation_mp (p : Prop) : p → ¬¬ p',
-
-    'theorem tnd (p : Prop) : p ∨ ¬ p',
-
-    'theorem double_negation (p : Prop) : p ↔ ¬¬p',
-
-    'theorem cases_analysis (p q : Prop) : (p → q) → (¬p → q) → q',
-
-    'theorem cases_impl_right (p q r : Prop) : (p → q ∨ r) → ((p → q) ∨ (p → r))',
-
-    'theorem Morgan_disj (p q : Prop) : ¬ (p ∧ q) ↔ ¬p ∨ ¬q',
-
-    'theorem neg_imp_def (p q : Prop) :  ¬ (p → q) ↔ p ∧ ¬ q',
-    'theorem imp_def (p q : Prop) : (p → q) ↔ (¬p ∨ q)',
-    'theorem contraposition (p q : Prop) : (p → q) ↔ (¬q → ¬p)',
-
-    'theorem peirce (p q : Prop) : (((p → q) → p) → p)',
-]
-
-
-
-
-const document2 = {
-    id: 0,
-    course: '/math/logic',
-    title: 'Propositional tautologies',
-    difficulty: 'Easy',
-    video_id: 'y3svPgyGnLc',
-    accepted: 0,
-    submitted: 0,
-    description_text:
-        'This is task to prove, using <b>LEAN 4</b> language. <br> Proofs should be done, by writing constructive <b>proof terms with the help of propositional constructors and destructors</b>. <br> In each math problem you will be given a list of <br> To proof each theorem, remove <b>"sorry"</b> and replace it with <b>proof term</b>. <br> <br> You can use following constructors and destructors <br>' +
-        '<br><i>Constructor and destructor for conjunction:</i><br>' +
-        '<i>Constructor: </i> <b>And.intro (h : p) (h : q) </b> creates <b>p ∧ q</b> proposition from <b>p</b> and <b>q</b> propositions</br>' +
-        '<i>Destructor-a: </i> <b> And.left </b> creates <b>p</b> proposition from <b>p ∧ q</b> <br>' +
-        '<i>Destructor-b: </i> <b> And.right </b> creates <b>q</b> proposition from <b>p ∧ q</b> <br>' +
-        '<br><i>Constructor and destructor for disjunction:</i><br>' +
-        '<i>Constructor-a: </i> <b> Or.intro_left (q : Prop) (h : p) </b> creates <b>p ∨ q</b> proposition from <b>p</b> proposition<br>' +
-        '<i>Constructor-b: </i> <b> Or.intro_left (q : Prop) (h : p) </b> creates <b>p ∨ q</b> proposition from <b>p</b> proposition<br>' +
-        '<i>Destructor:</i> <b> Or.elim (hpq : p ∨ q) (hpr : p → r) (hqr : q → r)</b> creates <b>r</b> proposition from <b>p ∨ q</b>, <b>p → r</b>, <b>q → r</b> propositions<br>' +
-        '<br><i>Constructor and destructor for implication:</i> <br>' +
-        '<i>Constructor: </i> <b>fun (hp : p) => (hq : q)</b> creates <b>p → q</b> proposition from <b>p</b> and <b>q</b> propositions</br>' +
-        '<i>Destructor: </i> <b>(hpq : p → q) (hp : p) </b> creates <b>q</b> proposition from <b>p → q</b> and <b>p</b> propositions <br>' +
-        '<br><i>Constructor and destructor for negation, constructor and destructor for False:</i><br>' +
-        '<i>Constructor for negation:</i> <b>fun (hp : p) => (h : False)</b> creates <b>¬p</b> from <b>p</b><br>' +
-        '<i>Destructor for negation/Constructor for False: </i> <b> (hnp : ¬p) (hp : p)</b> creates <b>False</b> proposition from <b>¬p</b> and <b>p</b> propositions<br>' +
-        '<i>Destructor for False:</i><b>False.elim (h : False)</b> creates any proposition <b>p</b> from <b>False</b> proposition<br>' +
-        '<br><i>Constructor for True:</i> <b>True.intro</b> creates True propistion<br>' +
-        '<br><i>Constructor for Logical equivalence:</i> <b>Iff.intro (hpq : p → q) (hqp : q → p) </b> creates <b>p ↔ q</b> proposition from <b>p → q</b> and <b>q → p</b> propositions' +
-        '<br><i>Destructor-a for Logical equivalence:</i> <b>Iff.mp (hpq : p ↔ q)</b> creates <b>p → q</b> proposition from <b>p ↔ q</b> proposition' +
-        '<br><i>Destructor-b for Logical equivalence:</i> <b>Iff.mp (hpq : p ↔ q)</b> creates <b>q → p</b> proposition from <b>p ↔ q</b> proposition' +
-        '<br><br><i>Classical logic negation destructor:</i> <b>ByContradiction (hnnp : ¬¬p)</b> creates <b>p</b> proposition from <b>¬¬p</b> proposition',
-
-
-
-
-
-    examples: [],
-    constraints: [],
-    note: 'Note that you can only use <b>ByContradiction</b> for the theorems, defined after <i>open Classical</i>. It is allowed to use <b>ByContradiction</b> for <i>negation_not_equiv</i>. However try not to use it.  <br> <br> For reference, see this documentation: <a href="https://leanprover.github.io/theorem_proving_in_lean4/title_page.html">LEAN 4 proving</a>',
-    languages: [['LEAN', 'lean']],
-    initial_codes: {
-        lean: add_lines(first_problem_code),
-    },
-    initial_language: 'lean',
-    requirements: first_requirements
-}
 
 
 
@@ -550,9 +374,131 @@ async function updateDocumentByKey(collection_name, key, updatedContent) {
 
 
 
+const second_problem_code = 
+[
+    '-- your proof goes here',
+    'theorem uni : ∀ _ : α, True := sorry',
+    'theorem exi_uni_then_uni (P : α → Prop) : (∃ _ : α, ∀ x : α, P x) → (∀ x : α, P x) := sorry',
+    'theorem exi_exi_then_exi (P : α → Prop) : (∃ _ : α, ∃ x : α, P x) → (∃ x : α, P x) := sorry',
+    'theorem uni_uni_then_uni (P : α → Prop) : (∀ _ : α, ∀ x : α, P x) → (∀ x : α, P x) := sorry',
+    'theorem change_variable_uni (P: α → Prop) : (∀ x : α, P x) ↔ (∀ y : α, P y) := sorry',
+    'theorem change_variable_exi (P: α → Prop) : (∃ x : α, P x) ↔ (∃ y : α, P y) := sorry',
+    'theorem uni_congr (P Q : α → Prop) : (∀ x : α, (P x ↔ Q x)) → ((∀ x : α, P x) ↔ (∀ x : α, Q x)) := sorry',
+    'theorem exi_congr (P Q : α → Prop) : (∀ x : α, (P x ↔ Q x)) → ((∃ x : α, P x) ↔ (∃ x: α, Q x)) := sorry',
+    'theorem uni_comm (P : α →  β → Prop) : (∀ x : α, ∀ y : β, P x y) ↔ (∀ y : β, ∀ x : α, P x y) := sorry',
+    'theorem exi_comm (P : α → β → Prop) : (∃ x : α, ∃ y : β, P x y) ↔ (∃ y : β, ∃ x : α, P x y) := sorry',
+    'theorem exi_uni_then_uni_exi (P : α → β → Prop) : (∃ x : α, ∀ y : β, P x y) → (∀ y : β, ∃ x : α, P x y) := sorry',
+    'theorem uni_conj (P Q: α → Prop) : (∀ x: α, P x ∧ Q x) ↔ (∀ x : α, P x) ∧ (∀ x : α, Q x) := sorry',
+    'theorem exi_disj (P Q : α → Prop) : (∃ x : α, P x ∨ Q x) ↔ (∃ x : α, P x) ∨ (∃ x: α, Q x) := sorry',
+    'theorem morgan_uni (P : α → Prop) : (∀ x : α, ¬ P x) ↔ (¬ ∃ x : α, P x) := sorry',
+    'theorem morgan_exi_mp (P : α → Prop) : (∃ x : α, ¬ P x) →  (¬ ∀ x : α, P x) := sorry',
+    'theorem brackets_exi_conj (P : Prop) (Q : α → Prop) : (∃ x : α, P ∧ Q x) ↔ (P ∧ ∃ x : α, Q x) := sorry',
+    'theorem brackets_uni_conj_mpr (P : Prop) (Q : α → Prop) : (P ∧ ∀ x : α, Q x) → (∀ x : α, P ∧ Q x) := sorry',
+    'theorem brackets_exi_disj_mp (P : Prop) (Q : α → Prop) : (∃ x : α, P ∨ Q x) → (P ∨ ∃ x : α, Q x) := sorry',
+    'theorem brackets_uni_disj_mpr (P : Prop) (Q : α → Prop) : (P ∨ ∀ x : α, Q x) → (∀ x : α, P ∨ Q x) := sorry',
+    'theorem brackets_left_uni_impl (P : Prop) (Q : α → Prop) : (P → ∀ x : α, Q x) ↔ (∀ x : α, (P → Q x)) := sorry',
+    'theorem brackets_left_exi_impl_mpr (P : Prop) (Q : α → Prop) : (∃ x : α, (P → Q x)) → (P → ∃ x : α, Q x) := sorry',
+    'theorem brackets_right_uni_impl_mpr (P : α → Prop) (Q : Prop) : (∃ x : α, (P x → Q)) → ((∀ x : α, P x) → Q) := sorry',
+    'theorem brackets_right_exi_impl (P : α → Prop) (Q : Prop) : ((∃ x : α, P x) → Q) ↔ (∀ x : α, (P x → Q)) := sorry',
+    'theorem inh_exi [Inhabited α] : ∃ _ : α, True := sorry',
+    'theorem inh_uni_exi_then_exi [Inhabited α] (P : α → Prop) : (∀ _ : α, ∃ x : α, P x) → (∃ x : α, P x) := sorry',
+    'theorem inh_uni_then_exi [Inhabited α] (P : α → Prop) : (∀ x : α, P x) → (∃ x : α, P x) := sorry',
+    'theorem inh_brackets_uni_conj [Inhabited α] (P : Prop) (Q : α → Prop) : (∀ x : α, P ∧ Q x) ↔ (P ∧ ∀ x : α, Q x) := sorry',
+    'theorem inh_brackets_exi_disj [Inhabited α] (P : Prop) (Q : α → Prop) : (∃ x : α, P ∨ Q x) ↔ (P ∨ ∃ x : α, Q x) := sorry',
+    'open Classical',
+    'theorem brackets_uni_disj (P : Prop) (Q : α → Prop) : (∀ x : α, P ∨ Q x) ↔ (P ∨ ∀ x : α, Q x) := sorry',
+    'theorem morgan_exi (P : α → Prop) : (∃ x : α, ¬ P x) ↔ (¬ ∀ x : α, P x) := sorry',
+    'theorem inh_brackets_left_exi_impl [Inhabited α] (P : Prop) (Q : α → Prop) : (P → ∃ x : α, Q x) ↔ (∃ x : α, (P → Q x)) := sorry',
+    'theorem inh_brackets_right_uni_impl [Inhabited α] (P: α → Prop)  (Q : Prop) :  ((∀ x : α, P x) → Q) ↔ (∃ x : α, (P x → Q)) := sorry',
+    '-- In a non empty pub there is someone such that, if he or she is drinking, then everyone in the pub is drinking',
+    'theorem drinker_paradox (is_drinking : pub_visitor → Prop) [Inhabited pub_visitor] : (∃ someone : pub_visitor, (is_drinking someone  → ∀ person : pub_visitor, is_drinking person)) := sorry'
+]
+
+
+const second_requirements = [
+    'theorem uni : ∀ _ : α, True :=',
+    'theorem exi_uni_then_uni (P : α → Prop) : (∃ _ : α, ∀ x : α, P x) → (∀ x : α, P x) :=',
+    'theorem exi_exi_then_exi (P : α → Prop) : (∃ _ : α, ∃ x : α, P x) → (∃ x : α, P x) :=',
+    'theorem uni_uni_then_uni (P : α → Prop) : (∀ _ : α, ∀ x : α, P x) → (∀ x : α, P x) :=',
+    'theorem change_variable_uni (P: α → Prop) : (∀ x : α, P x) ↔ (∀ y : α, P y) :=',
+    'theorem change_variable_exi (P: α → Prop) : (∃ x : α, P x) ↔ (∃ y : α, P y) :=',
+    'theorem uni_congr (P Q : α → Prop) : (∀ x : α, (P x ↔ Q x)) → ((∀ x : α, P x) ↔ (∀ x : α, Q x)) :=',
+    'theorem exi_congr (P Q : α → Prop) : (∀ x : α, (P x ↔ Q x)) → ((∃ x : α, P x) ↔ (∃ x: α, Q x)) :=',
+    'theorem uni_comm (P : α →  β → Prop) : (∀ x : α, ∀ y : β, P x y) ↔ (∀ y : β, ∀ x : α, P x y) :=',
+    'theorem exi_comm (P : α → β → Prop) : (∃ x : α, ∃ y : β, P x y) ↔ (∃ y : β, ∃ x : α, P x y) :=',
+    'theorem exi_uni_then_uni_exi (P : α → β → Prop) : (∃ x : α, ∀ y : β, P x y) → (∀ y : β, ∃ x : α, P x y) :=',
+    'theorem uni_conj (P Q: α → Prop) : (∀ x: α, P x ∧ Q x) ↔ (∀ x : α, P x) ∧ (∀ x : α, Q x) :=',
+    'theorem exi_disj (P Q : α → Prop) : (∃ x : α, P x ∨ Q x) ↔ (∃ x : α, P x) ∨ (∃ x: α, Q x) :=',
+    'theorem morgan_uni (P : α → Prop) : (∀ x : α, ¬ P x) ↔ (¬ ∃ x : α, P x) :=',
+    'theorem morgan_exi_mp (P : α → Prop) : (∃ x : α, ¬ P x) →  (¬ ∀ x : α, P x) :=',
+    'theorem brackets_exi_conj (P : Prop) (Q : α → Prop) : (∃ x : α, P ∧ Q x) ↔ (P ∧ ∃ x : α, Q x) :=',
+    'theorem brackets_uni_conj_mpr (P : Prop) (Q : α → Prop) : (P ∧ ∀ x : α, Q x) → (∀ x : α, P ∧ Q x) :=',
+    'theorem brackets_exi_disj_mp (P : Prop) (Q : α → Prop) : (∃ x : α, P ∨ Q x) → (P ∨ ∃ x : α, Q x) :=',
+    'theorem brackets_uni_disj_mpr (P : Prop) (Q : α → Prop) : (P ∨ ∀ x : α, Q x) → (∀ x : α, P ∨ Q x) :=',
+    'theorem brackets_left_uni_impl (P : Prop) (Q : α → Prop) : (P → ∀ x : α, Q x) ↔ (∀ x : α, (P → Q x)) :=',
+    'theorem brackets_left_exi_impl_mpr (P : Prop) (Q : α → Prop) : (∃ x : α, (P → Q x)) → (P → ∃ x : α, Q x) :=',
+    'theorem brackets_right_uni_impl_mpr (P : α → Prop) (Q : Prop) : (∃ x : α, (P x → Q)) → ((∀ x : α, P x) → Q) :=',
+    'theorem brackets_right_exi_impl (P : α → Prop) (Q : Prop) : ((∃ x : α, P x) → Q) ↔ (∀ x : α, (P x → Q)) :=',
+    'theorem inh_exi [Inhabited α] : ∃ _ : α, True :=',
+    'theorem inh_uni_exi_then_exi [Inhabited α] (P : α → Prop) : (∀ _ : α, ∃ x : α, P x) → (∃ x : α, P x) :=',
+    'theorem inh_uni_then_exi [Inhabited α] (P : α → Prop) : (∀ x : α, P x) → (∃ x : α, P x) :=',
+    'theorem inh_brackets_uni_conj [Inhabited α] (P : Prop) (Q : α → Prop) : (∀ x : α, P ∧ Q x) ↔ (P ∧ ∀ x : α, Q x) :=',
+    'theorem inh_brackets_exi_disj [Inhabited α] (P : Prop) (Q : α → Prop) : (∃ x : α, P ∨ Q x) ↔ (P ∨ ∃ x : α, Q x) :=',
+    'theorem brackets_uni_disj (P : Prop) (Q : α → Prop) : (∀ x : α, P ∨ Q x) ↔ (P ∨ ∀ x : α, Q x) :=',
+    'theorem morgan_exi (P : α → Prop) : (∃ x : α, ¬ P x) ↔ (¬ ∀ x : α, P x) :=',
+    'theorem inh_brackets_left_exi_impl [Inhabited α] (P : Prop) (Q : α → Prop) : (P → ∃ x : α, Q x) ↔ (∃ x : α, (P → Q x)) :=',
+    'theorem inh_brackets_right_uni_impl [Inhabited α] (P: α → Prop)  (Q : Prop) :  ((∀ x : α, P x) → Q) ↔ (∃ x : α, (P x → Q)) :=',
+    'theorem drinker_paradox (is_drinking : pub_visitor → Prop) [Inhabited pub_visitor] : (∃ someone : pub_visitor, (is_drinking someone  → ∀ person : pub_visitor, is_drinking person)) :='
+]
+
+
+
+
+
+const document3 = {
+    id: 1,
+    course: '/math/logic',
+    title: 'Quantifier validities',
+    difficulty: 'Easy',
+    video_id: 'y3svPgyGnLc',
+    accepted: 0,
+    submitted: 0,
+    description_text:
+        'This is task to prove, using <b>LEAN 4</b> language. <br> Proofs should be done, by writing constructive <b>proof terms with the help of constructors and destructors</b>. <br> In each math problem you will be given a list of permitted constructors, destructors and theorems <br> To proof each theorem, remove <b>"sorry"</b> and replace it with <b>proof term</b>. <br> You can use following constructors and destructors: <br>' +
+        '<br>All the constructors and destructors from previous problem<br>' +
+        '<br>You can assume all theorems from previous problem as axioms<br>' +
+        '<br><i>Constructor and destructor for the universal quantifier:</i><br>' +
+        '<i> Constructor: </i> <b> fun (x : α) => (φ : Prop) </b> creates <b> ∀ x : α, φ</b> proposition from <b>φ</b> proposition <br>' +
+        '<i> Destructor: </i> <b> (h : ∀ x : α, φ) (s : α) </b> creates <b>φ</b> proposition from <b> ∀ x : α, φ</b> proposition and <b>α</b> type <br>' +
+        '<br><i>Constructor and destructor for the existential quantifier:</i><br>' +
+        '<i> Constructor: </i> <b> Exists.intro (x : α) (φ : Prop) </b> creates <b> ∃ x : α, φ</b> proposition from <b>α</b> type and <b>φ</b> proposition<br>' +
+        '<i> Destructor: </i> <b> Exists.elim (∃ x : α, φ) (fun (w : α) => fun (hw : φ[w/x]) => ψ) </b> creates <b> ψ</b> proposition from <b> ∃ x : α, φ</b> proposition <br>' +
+        '<br> If the type <b>α</b> is <b>Inhabited</b>, you can use <b>Inhabited.default : α</b><br>' +
+        '<br>P.S. <b>φ[w/x]</b> is a <b>φ</b> proposition, where all variables <b>x</b> are changed to <b>w</b><br>'
+        ,
+
+
+    examples: [],
+    constraints: [],
+    note: 'Note that you can only use <b>Classical (em and ByContradiction)</b> for the theorems, defined after <i>open Classical</i>.  <br> <br> For reference, see this documentation: <a href="https://leanprover.github.io/theorem_proving_in_lean4/title_page.html">LEAN 4 proving</a>',
+    languages: [['LEAN', 'lean']],
+    initial_codes: {
+        lean: add_lines(second_problem_code),
+    },
+    initial_language: 'lean',
+    requirements: second_requirements
+}
+
+
+
+
+
+
+
+
 connectToDatabase()
     .then(async () => {
-        await updateDocumentByKey('mycollection', '11C0DB08DA2E4F63BFD95A3F87D0D7F2', document)
+        await getAllDocumentsWithKeys('users');
         await closeConnection();
     })
     .catch(err => {

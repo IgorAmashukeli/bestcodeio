@@ -184,6 +184,7 @@ export class ProblemComponent implements AfterContentChecked {
               code: json_response['code'],
               time: json_response['time'],
               status: json_response['status'],
+              log : json_response['log']
             },
             user.uid,
             this.router.url.split('/')[1],

@@ -17,13 +17,15 @@ import { FormsModule } from '@angular/forms';
 })
 export class SubmissionsComponent implements OnInit {
   course_type: boolean = false;
-
+  OK : boolean = false;
   submission_code: string = '';
+  submission_log : string = '';
   submissions_array = [];
   submission_language: string = '';
   loading$ = new Subject<boolean>();
   authStateChangedSubscription!: Unsubscribe;
   table_view: Observable<boolean> = of(true);
+  code_view: Observable<boolean> = of(false);
 
   constructor(
     private router: Router,
@@ -96,9 +98,22 @@ export class SubmissionsComponent implements OnInit {
     this.submission_language = 'lean';
     this.submission_code = this.submissions_array[index]['code'];
     this.table_view = of(false);
+    this.code_view = of(true);
+  }
+
+  open_log(index : number) {
+    this.table_view = of(false);
+    this.code_view = of(false);
+    this.submission_log = this.submissions_array[index]['log'];
+    this.OK = this.submission_log.startsWith('OK!');
+  }
+
+  close_log() {
+    this.table_view = of(true);
   }
 
   close_proof() {
     this.table_view = of(true);
+    this.code_view = of(false);
   }
 }

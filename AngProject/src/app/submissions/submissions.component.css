@@ -21,11 +21,25 @@ td {
 }
 
 .status-OK {
+  background-color: rgb(68, 68, 68);
   color: green;
+  border: none;
 }
 
 .status-not-OK {
+  background-color: rgb(68, 68, 68);
   color: red;
+  border: none;
+}
+
+
+.status-OK:hover {
+  color : lightgreen;
+}
+
+
+.status-not-OK:hover {
+  color : rgb(249, 38, 114);;
 }
 
 table {
@@ -80,4 +94,20 @@ table {
   color: white;
   text-align: center;
   font-size: 40px;
+
+}
+
+.result-OK {
+  text-align: center;
+  margin-top: 20px;
+  margin-left: 20px;
+  color: green;
+}
+
+
+.result-Error {
+  text-align: center;
+  margin-top: 20px;
+  margin-left: 20px;
+  color: red;
 }

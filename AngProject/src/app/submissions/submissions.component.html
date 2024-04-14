@@ -63,17 +63,22 @@
               }}
             </td>
             <td
-              [ngClass]="{
-                'status-OK': this.submissions_array[2 - i]['status'] == 'OK',
-                'status-not-OK': this.submissions_array[2 - i]['status'] != 'OK'
-              }"
               style="width: 33.3%"
             >
+            <button
+                (click)="open_log(this.submissions_array.length - 1 - i)"
+                [ngClass]="{
+                  'status-OK': this.submissions_array[this.submissions_array.length - 1 - i]['status'] == 'OK',
+                  'status-not-OK': this.submissions_array[this.submissions_array.length - 1 - i]['status'] != 'OK'
+                }"
+                style="height: 100%; width: 100%"
+              >
               {{
                 this.submissions_array[this.submissions_array.length - 1 - i][
                   "status"
                 ]
               }}
+              </button>
             </td>
             <td style="width: 33.3%">
               <button
@@ -106,20 +111,39 @@
   To view submission, please sign in
 </div>
 <div *ngIf="!(table_view | async)">
-  <div class="submission-proof-title">
-    <img
-      (click)="close_proof()"
-      class="picture-menu"
-      src="../../assets/images/problem_backwards.png"
-    />
-    Your solution:
-  </div>
 
-  <ngx-monaco-editor
-    style="height: 100vh; width: 100vw; margin-top: 30px"
-    [options]="{
-    language: this.submission_language,
-  }"
-    [(ngModel)]="this.submission_code"
-  ></ngx-monaco-editor>
+  <div *ngIf="code_view | async">
+        <img
+          (click)="close_proof()"
+          class="picture-menu"
+          src="../../assets/images/problem_backwards.png"
+        />
+        <div class="submission-proof-title">
+          <p>Your solution:</p>
+        </div>
+      
+    <ngx-monaco-editor
+      style="height: 100vh; width: 100vw; margin-top: 30px"
+      [options]="{
+      language: this.submission_language,
+    }"
+      [(ngModel)]="this.submission_code"
+    ></ngx-monaco-editor>
+  </div>
+  <div *ngIf="!(code_view | async)">
+    <img
+          (click)="close_log()"
+          class="picture-menu"
+          src="../../assets/images/problem_backwards.png"
+        />
+        <div class="submission-proof-title">
+          <p>Your log:</p>
+        </div>
+        <div
+        [ngClass]="{ 'result-OK': OK, 'result-Error': !OK }"
+      >
+        {{this.submission_log}}
+      </div>
+    
+  </div>
 </div>

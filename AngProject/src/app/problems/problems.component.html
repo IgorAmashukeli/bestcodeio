@@ -7,7 +7,7 @@
 <app-navigation_bar></app-navigation_bar>
 <div class="main-body-problems">
   <ng-container>
-    <div *ngIf="this.loading | async" class="table-wrapper">
+    <div *ngIf="!(this.loading$ | async)" class="table-wrapper">
       <table>
         <thead>
           <tr class="problem-title">
@@ -45,8 +45,8 @@
                   *ngIf="authService.loggedIn$ | async"
                   class="problems-not-solved"
                   [ngClass]="{
-                    'problems-not-solved': user_statuses[i][0] == 'N',
-                    'problems-solved': user_statuses[i][0] == 'S'
+                    'problems-not-solved': user_statuses[i] == 'Not solved',
+                    'problems-solved': user_statuses[i] == 'Solved'
                   }"
                 >
                   {{ user_statuses[i] }}
@@ -83,7 +83,7 @@
         </tbody>
       </table>
     </div>
-    <div *ngIf="!(this.loading | async)" class="loader-container">
+    <div *ngIf="this.loading$ | async" class="loader-container">
       <div class="loader"></div>
     </div>
   </ng-container>

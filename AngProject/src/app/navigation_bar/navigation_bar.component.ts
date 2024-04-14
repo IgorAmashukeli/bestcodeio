@@ -32,7 +32,6 @@ export class NavigationBarComponent {
       if (user) {
         this.photo_url = user.photoURL;
         this.is_photo = true;
-        console.log(this.photo_url);
       } else {
         this.photo_url = '';
         this.is_photo = false;
