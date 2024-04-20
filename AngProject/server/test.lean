@@ -1,5 +1,3 @@
---your proof goes here
-
 theorem neg_true : ¬ True ↔ False :=
    Iff.intro
    (fun (x : ¬ True) => (x True.intro))
@@ -277,13 +275,11 @@ theorem syllogism (p q r : Prop) : (p → q) → (q → r) → (p → r) :=
    fun (h : p → q) => (fun (g : q → r) => (fun (s : p) => g (h s)))
 
 
-
 theorem neg_congr (p q : Prop) : (p ↔ q) → (¬p ↔ ¬q) :=
    fun (h : p ↔ q) =>
       Iff.intro
       (fun (g : ¬p) => fun (s : q) => g (Iff.mpr h s))
       (fun (g : ¬q) => fun (s : p) => g (Iff.mp h s))
-
 
 
 theorem disj_congr (p q r : Prop) : (p ↔ q) → ((p ∨ r) ↔ (q ∨ r)) :=
@@ -398,7 +394,7 @@ theorem Morgan_disj (p q : Prop) : ¬ (p ∧ q) ↔ ¬p ∨ ¬q :=
                              )
                              (Or.inl : ¬ p → ¬ p ∨ ¬q)
    )
-   (morgan_conj_mpr p q
+   (morgan_conj_mpr p q)
 
 
 

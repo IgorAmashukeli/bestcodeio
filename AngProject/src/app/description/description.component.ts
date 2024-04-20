@@ -47,8 +47,9 @@ export class DescriptionComponent implements OnInit {
     this.problem_difficulty = problem['difficulty'];
     this.accepted = problem['accepted'];
     this.submitted = problem['submitted'];
-    if (this.accepted != 0) {
-      this.acceptance_rate = (this.accepted / this.submitted) * 100;
+    if (this.submitted != 0) {
+      const acceptance_rate_not_rounded = (this.accepted / this.submitted) * 100;
+      this.acceptance_rate = parseFloat(acceptance_rate_not_rounded.toFixed(2));
     }
     this.description_text = problem['description_text'];
     this.examples = problem['examples'];

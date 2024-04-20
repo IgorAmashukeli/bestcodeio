@@ -664,13 +664,21 @@ app.post('/submit_math/:topic/:problem_id', async (req, res) => {
         const problemId = req.params.problem_id;
 
         const query = { "id": parseInt(problemId), "course": '/' + 'math' + '/' + topic };
-        const problem = await getDocumentsByQuery("mycollection", query);
-        const requirements = problem[0]['requirements'];
+        const problems = await getDocumentsByQuery("mycollection", query);
+        const problem = problems[0];
+        const requirements = problem['requirements'];
         const result = await runLEANContainer({ "code": code["code"], "required_theorems": requirements });
 
+        problem['submitted']++;
+
+        const keys = await getDocumentKeysByQuery("mycollection", query);
+        const key = keys[0];
+
+        const response = await updateDocumentByKey("mycollection", key, problem);
 
         result['time'] = getTime()
         result['code'] = code["code"];
+
 
         res.status(200).json(result);
     } catch (error) {
@@ -699,6 +707,13 @@ app.put('/problem_solved/:user_id/:course/:topic/:problem_id', async (req, res) 
         content_user["problems"][key_problem]["status"] = "Solved";
 
         const result = await updateDocumentByKey("users", key_user, content_user);
+
+        const problems = await getDocumentsByQuery("mycollection", query_problem);
+        const problem = problems[0];
+        problem['accepted']++;
+
+
+        const response = await updateDocumentByKey("mycollection", key_problem, problem);
 
         if (result) {
             res.status(200).json("OK");
