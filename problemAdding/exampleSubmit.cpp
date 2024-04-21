@@ -1,10 +1,5 @@
 #include <future>
 #include <chrono>
-#include <iostream>
-
-int summa(int n, int k) {
-    return n + k;
-}
 
 std::chrono::milliseconds max_time(0);
 
@@ -56,4 +51,4 @@ int main() {
     std::cout << "OK\n";
     std::cout << max_time << "\n";
     return 0;
-}    
+}

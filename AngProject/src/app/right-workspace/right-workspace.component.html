@@ -36,8 +36,12 @@
         <div *ngIf="!(this.proof_loading | async)" class="loader-container">
           <div class="loader"></div>
         </div>
+        <div *ngIf="!(this.code_loading | async)" class="loader-container">
+          <div class="loader"></div>
+        </div>
+        <div *ngIf="this.code_loading || this.proof_loading | async">
         <div
-          *ngIf="this.example_array.length > 0"
+          *ngIf="this.example_array.length > 0 && !this.course_type"
           style="display: flex; flex-direction: column"
         >
           <div
@@ -146,7 +150,14 @@
           >
             {{ mathResponse }}
           </div>
-        </ng-container>
+          <div
+            *ngIf="this.code_loading | async"
+            [ngClass]="{ 'result-OK': OK, 'result-Error': !OK }"
+          >
+            {{ programmingResponse }}
+          </div>
+          </ng-container>
+        </div>
       </ng-container>
     </as-split-area>
   </as-split>

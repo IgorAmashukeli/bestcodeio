@@ -37,6 +37,17 @@ export class DataService {
     return this.http.post<any>(url, { code: code });
   }
 
+
+  submitProgramming(topic: string, id: string, code: string): Observable<any> {
+    const url = `http://localhost:3000/submit_programming/${topic}/${id}`;
+    return this.http.post<any>(url, {code : code})
+  }
+
+  runProgramming(topic: string, id: string, code: string): Observable<any> {
+    const url = `http://localhost:3000/run_programming/${topic}/${id}`;
+    return this.http.post<any>(url, {code : code})
+  }
+
   solveProblem(
     user_id: string,
     course: string,

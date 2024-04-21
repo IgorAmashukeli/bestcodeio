@@ -12,6 +12,7 @@ const containerPath = '/data'
 
 const oracledb = require('oracledb');
 const { get } = require('http');
+const { log } = require('console');
 
 let some_theorems = ""
 
@@ -262,10 +263,39 @@ async function compileCppCommand(extra_flag) {
 }
 
 
+function parseWALog(logData) {
+    const logParts = logData.split('\n');
+    
+    const input = logParts[2].replace('input: ', '');
+    const correctOutput = logParts[3].replace('correct output: ', '');
+    const yourOutput = logParts[4].replace('your output: ', '');
+
+    return {
+        status: "WA",
+        log: "wrong output",
+        test_case : logParts[1],
+        input: input,
+        correctOutput: correctOutput,
+        yourOutput: yourOutput
+    };
+}
+
+
+function parseOKLog(logData) {
+    const logParts = logData.split('\n');
+    const max_time = logParts[1];
+
+    return {
+        status: "OK",
+        log: "OK! " + max_time
+    }
+}
+
+
 
 async function executeCppCommandWithTimeout(code, timeoutSeconds) {
     return new Promise((resolve, reject) => {
-        const command = ['sh', '-c', `output=$(timeout ${timeoutSeconds}s ./a.out; timeout_exit_code=$?; if [ $timeout_exit_code -eq 124 ]; then echo "TIMEOUT"; fi); echo "$output"`];
+        const command = ["/a.out"];
         container.exec({
             Cmd: command,
             AttachStdout: true,
@@ -292,15 +322,15 @@ async function executeCppCommandWithTimeout(code, timeoutSeconds) {
 
 
                 stream.on('end', function () {
-                    if (cppOutput.replace(/[^\x20-\x7E]/g, "").replace(/\s/g, "") === "TIMEOUT") {
+                    if (cppOutput.includes('TL')) {
                         resolve({ "status": 'TL', "log": 'Time Limit Exceeded' });
                     } else {
                         if (cppOutput.includes('WA')) {
-                            resolve({ "status": 'WA', "log": 'Wrong Solution: ' + cppOutput.trim() });
+                            resolve(parseWALog(cppOutput.trim()));
                         } else if (cppOutput.includes('OK')) {
-                            resolve({ "status": 'OK', "log": 'OK! All testcases passed' });
+                            resolve(parseOKLog(cppOutput.trim()));
                         } else {
-                            resolve({ "status": 'RE', "log": 'RE' + cppOutput.trim() })
+                            resolve({ "status": 'RE', "log": cppOutput.trim() })
                         }
                     }
                 });
@@ -332,32 +362,6 @@ const port = 3000;
 
 let connection
 
-
-async function connectToDatabase() {
-    try {
-        connection = await oracledb.getConnection({
-            user: 'first_user',
-            password: process.env.MYPW,
-            connectString: 'autodb_high'
-        });
-
-        console.log("Connected to database successfully.");
-    } catch (err) {
-        console.error("Error connecting to database:", err);
-    }
-}
-
-
-async function closeConnection() {
-    if (connection) {
-        try {
-            await connection.close();
-            console.log("Database connection closed successfully.");
-        } catch (err) {
-            console.error("Error closing database connection:", err);
-        }
-    }
-}
 
 
 async function getDocumentsByQuery(collection_name, query) {
@@ -427,31 +431,58 @@ async function getDocumentAndKeysByQuery(collection_name, query) {
 
 
 let server;
+async function initializeConnectionPool() {
+    try {
+        await oracledb.createPool({
+            user: 'first_user',
+            password: process.env.MYPW,
+            connectString: 'autodb_high',
+            poolMax: 10,
+            poolMin: 2,
+            poolIncrement: 2,
+            poolTimeout: 60,
+            queueTimeout: 60000
+        });
+        console.log('Connection pool initialized successfully.');
+    } catch (err) {
+        console.error('Error initializing connection pool:', err);
+        throw err;
+    }
+}
 
-connectToDatabase().then(async () => {
-    server = app.listen(port, () => {
-        console.log(`Server listening at http://localhost:${port}`);
-    });
-})
 
+async function startServer() {
+    try {
+        await initializeConnectionPool();
+        server = app.listen(port, () => {
+            console.log(`Server listening at http://localhost:${port}`);
+        });
+        connection = await oracledb.getConnection();
+    } catch (err) {
+        console.error('Error starting server:', err);
+    }
+}
+
+startServer();
 
 process.on('SIGINT', () => {
     closeServer();
 });
 
+
 async function closeServer() {
     try {
-        closeConnection();
-        console.log("Connection is closed");
-        server.close(() => {
-            console.log("Server is closed");
-            process.exit(0);
-        });
+        if (server) {
+            server.close(async () => {
+                console.log('Server is closed.');
+            });
+        }
     } catch (err) {
-        console.error("Error closing server:", err);
+        console.error('Error closing server:', err);
         process.exit(1);
     }
 }
+
 
 
 app.use(express.json());
@@ -831,18 +862,22 @@ app.post('/run_programming/:topic/:problem_id', async (req, res) => {
 
         const query = { "id": parseInt(problemId), "course": '/' + 'programming' + '/' + topic };
         const problem = await getDocumentsByQuery("mycollection", query);
-        const run_adding = problem[0]['run_code'];
-        const run_code = code["code"] + run_adding;
+        const run_headers = problem[0]['run_headers'];
+        const run_body = problem[0]['run_code'];
+        const run_code = run_headers + code["code"] + run_body;
 
 
         const compile_result = await runCppContainer({ "code": run_code, "extra_flag": "-fsanitize=address" });
         const logs = compile_result["compile_logs"];
+        let result;
         if (logs != '') {
-            res.status(200).json(logs);
+            result = {"status" : "CE", "log" : logs};
+            
         } else {
-            const result = await executeCppCommandWithTimeout(run_code, 1);
-            res.status(200).json(result);
+            result = await executeCppCommandWithTimeout(run_code, 1);
+            
         }
+        res.status(200).json(result);
 
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });
@@ -860,17 +895,21 @@ app.post('/submit_programming/:topic/:problem_id', async (req, res) => {
 
         const query = { "id": parseInt(problemId), "course": '/' + 'programming' + '/' + topic };
         const problem = await getDocumentsByQuery("mycollection", query);
-        const submit_adding = problem[0]['submit_code'];
-        const submit_code = code["code"] + submit_adding;
+        const submit_headers = problem[0]['submit_headers'];
+        const submit_body = problem[0]['submit_code'];
+        const submit_code = submit_headers + code["code"] + submit_body;
 
-        const compile_result = await runCppContainer({ "code": submit_code, "extra_flag": "-fsanitize=address" });
+        const compile_result = await runCppContainer({ "code": submit_code, "extra_flag": "" });
         const logs = compile_result["compile_logs"];
+        let result;
         if (logs != '') {
-            res.status(200).json(logs);
+            result = {"status" : "CE", "log" : logs};
+            
         } else {
-            const result = await executeCppCommandWithTimeout(submit_code, 1);
-            res.status(200).json(result);
+            result = await executeCppCommandWithTimeout(submit_code, 1);
+            
         }
+        res.status(200).json(result);
 
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });

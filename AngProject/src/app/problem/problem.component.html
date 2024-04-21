@@ -36,7 +36,7 @@
           *ngIf="!this.course_flag"
           style="width: 16.66667%; display: flex; align-items: center"
         >
-          <button class="run-button">Run</button>
+          <button class="run-button" (click)="run()">Run</button>
         </div>
       </ng-container>
       <ng-container *ngIf="!(authService.loggedIn$ | async)">
@@ -85,8 +85,10 @@
     <as-split-area size="50">
       <right-workspace
         [mathResponse]="math_response"
+        [programmingResponse]="programming_response"
         [OK]="OK"
         [proof_loading]="proof_loading"
+        [code_loading]="code_loading"
         [selectedLanguage]="selectedLanguage"
       ></right-workspace>
     </as-split-area>

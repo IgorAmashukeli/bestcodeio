@@ -76,8 +76,10 @@ export class ProblemComponent implements AfterContentChecked {
   window_object: any;
   splitHeight: string = '0px';
   math_response: string = '';
+  programming_response: string = '';
   OK: boolean = false;
   proof_loading: Observable<boolean> = of(true);
+  code_loading: Observable<boolean> = of(true);
   loading_submission = true;
 
   assign_fields(problem: any): void {
@@ -201,6 +203,39 @@ export class ProblemComponent implements AfterContentChecked {
 
         this.proof_loading = of(true);
       }
+    } else {
+      this.code_loading = of(false);
+      const code = this.rightWorkSpaceComponent.cur_code;
+      const json_response = await firstValueFrom(
+        this.dataService.submitProgramming(
+          this.router.url.split('/')[2],
+          this.router.url.split('/')[3],
+          code
+        )
+      );
+      this.OK = json_response['status'] == 'OK';
+      this.programming_response = json_response['log'];
+      this.code_loading = of(true);
     }
   }
+
+  async run () {
+
+    this.code_loading = of(false);
+    const code = this.rightWorkSpaceComponent.cur_code;
+      const json_response = await firstValueFrom(
+        this.dataService.runProgramming(
+          this.router.url.split('/')[2],
+          this.router.url.split('/')[3],
+          code
+        )
+      );
+      this.OK = json_response['status'] == 'OK';
+      console.log(json_response);
+      this.programming_response = json_response['log'];
+      this.code_loading = of(true);
+  }
+
+
+
 }

@@ -26,8 +26,10 @@ import { AuthService } from '../services/auth.service';
 export class RightWorkSpaceComponent implements OnInit, OnChanges {
   @Input() selectedLanguage: string = '';
   @Input() mathResponse: string = '';
+  @Input() programmingResponse: string = '';
   @Input() OK: boolean = false;
   @Input() proof_loading: Observable<boolean> = of(true);
+  @Input() code_loading: Observable<boolean> = of(true);
 
   code_languages: Array<Array<string>> = [[]];
   initial_codes: any = {};

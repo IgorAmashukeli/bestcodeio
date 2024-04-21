@@ -20,7 +20,7 @@ function escapeString(str) {
 }
 
 
-const filename = 'example.cpp';
+const filename = 'exampleSubmit.cpp';
 const fileContent = readCppFile(filename);
 if (fileContent !== null) {
     console.log(escapeString(fileContent));

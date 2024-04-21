@@ -232,8 +232,11 @@ const document = {
         cpp: '#include <iostream>\n\nint summa(int n, int k) {\n    // your code here\n}'
     },
     initial_language: 'cpp',
-    run_code: '\n\nint main() {\n  if (summa(1, 2) != 3) {\n    std::cout << "WA!\\n";\nreturn 0;\n  } else if (summa(2, 2) != 4) {\n    std::cout << "WA!\\n"; return 0;\n  } else if (summa(3, 3) != 6) {\n    std::cout << "WA!\\n"; return 0;\n  } else {\n    std::cout << "OK!\\n";\n  }\n}',
-    submit_code: '\n\nint main() {\n  for (int i = 0; i < 100; ++i) {\n    for (int j = 0; j < 100; ++j) {\n      if (summa(i, j) != i + j) {\n        std::cout << "WA! input: " << i << " " << j << "\\n"\n                  << "correct output: " << i + j\n                  << " your output: " << summa(i, j) << "\\n";\n        return 0;\n      }\n    }\n  }\n  std::cout << "OK!"\n            << "\\n";\n}'
+
+    run_headers: '#include <future>\n#include <chrono>\n',
+    run_code: '\n\nstd::chrono::milliseconds max_time(0);\n\n\nint helper(int a, int b) {\n    auto start_time = std::chrono::high_resolution_clock::now();\n    \n    int res = summa(a, b);\n    auto end_time = std::chrono::high_resolution_clock::now();\n    auto cur_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);\n    if (cur_time > max_time) {\n        max_time = cur_time;\n    }\n    return res;\n}\n\nint main() {\n    int test_case_num = 0;\n    const int time_limit_seconds = 1; \n\n    for (int i = 0; i < 10; ++i) {\n        for (int j = 0; j < 10; ++j) {\n            int correct_result = i + j;\n            int result;\n\n            std::future<int> future_result = std::async(std::launch::async, helper, i, j);\n            auto status = future_result.wait_for(std::chrono::seconds(time_limit_seconds));\n\n            if (status == std::future_status::timeout) {\n                std::cout << "TL!\\n";\n                exit(0);\n            }\n\n            result = future_result.get();\n\n\n            if (result != correct_result) {\n                std::cout << "WA!\\n";\n                std::cout << test_case_num << "\\n";\n                std::cout << "input: " << i << " " << j << "\\n";\n                std::cout << "correct output: " << correct_result << "\\n";\n                std::cout << "your output: " << result << "\\n";\n                return 0;\n            }\n\n            test_case_num++;\n        }\n    }\n    std::cout << "OK\\n";\n    std::cout << max_time << "\\n";\n    return 0;\n}',
+    submit_headers: '#include <future>\n#include <chrono>\n',
+    submit_code: '\n\nstd::chrono::milliseconds max_time(0);\n\n\nint helper(int a, int b) {\n    auto start_time = std::chrono::high_resolution_clock::now();\n    \n    int res = summa(a, b);\n    auto end_time = std::chrono::high_resolution_clock::now();\n    auto cur_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);\n    if (cur_time > max_time) {\n        max_time = cur_time;\n    }\n    return res;\n}\n\nint main() {\n    int test_case_num = 0;\n    const int time_limit_seconds = 1; \n\n    for (int i = 0; i < 10; ++i) {\n        for (int j = 0; j < 10; ++j) {\n            int correct_result = i + j;\n            int result;\n\n            std::future<int> future_result = std::async(std::launch::async, helper, i, j);\n            auto status = future_result.wait_for(std::chrono::seconds(time_limit_seconds));\n\n            if (status == std::future_status::timeout) {\n                std::cout << "TL!\\n";\n                exit(0);\n            }\n\n            result = future_result.get();\n\n\n            if (result != correct_result) {\n                std::cout << "WA!\\n";\n                std::cout << test_case_num << "\\n";\n                std::cout << "input: " << i << " " << j << "\\n";\n                std::cout << "correct output: " << correct_result << "\\n";\n                std::cout << "your output: " << result << "\\n";\n                return 0;\n            }\n\n            test_case_num++;\n        }\n    }\n    std::cout << "OK\\n";\n    std::cout << max_time << "\\n";\n    return 0;\n}    '
 
 }
 
@@ -722,8 +725,8 @@ const document2 = {
 
 connectToDatabase()
     .then(async () => {
-        await getAllDocumentKeys('mycollection');
-        await updateDocumentByKey('mycollection', '726B828068834F27BFAFCFE0B9502CB2', document2)
+        await updateDocumentByKey('mycollection', '11C0DB08DA2E4F63BFD95A3F87D0D7F2', document);
+        await getAllDocumentsWithKeys('mycollection');
         await closeConnection();
     })
     .catch(err => {
