@@ -272,7 +272,7 @@ function parseWALog(logData) {
 
     return {
         status: "WA",
-        log: "wrong output",
+        log: "wrong answer",
         test_case : logParts[1],
         input: input,
         correctOutput: correctOutput,
@@ -284,10 +284,10 @@ function parseWALog(logData) {
 function parseOKLog(logData) {
     const logParts = logData.split('\n');
     const max_time = logParts[1];
-
     return {
         status: "OK",
-        log: "OK! " + max_time
+        log: "OK! ",
+        runtime: max_time
     }
 }
 
@@ -330,7 +330,7 @@ async function executeCppCommandWithTimeout(code, timeoutSeconds) {
                         } else if (cppOutput.includes('OK')) {
                             resolve(parseOKLog(cppOutput.trim()));
                         } else {
-                            resolve({ "status": 'RE', "log": cppOutput.trim() })
+                            resolve({ "status": 'RE', "log": "Runtime Error:\n" + cppOutput.trim() })
                         }
                     }
                 });
@@ -871,7 +871,7 @@ app.post('/run_programming/:topic/:problem_id', async (req, res) => {
         const logs = compile_result["compile_logs"];
         let result;
         if (logs != '') {
-            result = {"status" : "CE", "log" : logs};
+            result = {"status" : "CE", "log" : "Compilation Error:\n" + logs};
             
         } else {
             result = await executeCppCommandWithTimeout(run_code, 1);
@@ -894,19 +894,36 @@ app.post('/submit_programming/:topic/:problem_id', async (req, res) => {
         const problemId = req.params.problem_id;
 
         const query = { "id": parseInt(problemId), "course": '/' + 'programming' + '/' + topic };
-        const problem = await getDocumentsByQuery("mycollection", query);
-        const submit_headers = problem[0]['submit_headers'];
-        const submit_body = problem[0]['submit_code'];
+        const problems = await getDocumentsByQuery("mycollection", query);
+        const problem = problems[0];
+        const submit_headers = problem['submit_headers'];
+        const submit_body = problem['submit_code'];
         const submit_code = submit_headers + code["code"] + submit_body;
 
-        const compile_result = await runCppContainer({ "code": submit_code, "extra_flag": "" });
+        const compile_result = await runCppContainer({ "code": submit_code, "extra_flag": "-fsanitize=address" });
         const logs = compile_result["compile_logs"];
+
+        problem['submitted']++;
+        const keys = await getDocumentKeysByQuery("mycollection", query);
+        const key = keys[0];
+
+        const response = await updateDocumentByKey("mycollection", key, problem);
+
+
+
         let result;
         if (logs != '') {
-            result = {"status" : "CE", "log" : logs};
-            
+            result = {"status" : "CE", "log" : "Compilation Error: \n" + logs};
+            result['time'] = getTime();
+            result['code'] = code["code"];
+            result['runtime'] = '-';
         } else {
             result = await executeCppCommandWithTimeout(submit_code, 1);
+            result['time'] = getTime()
+            result['code'] = code["code"];
+            if (result['status'] != 'OK') {
+                result['runtime'] = '-';
+            }
             
         }
         res.status(200).json(result);

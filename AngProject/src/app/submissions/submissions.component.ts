@@ -101,6 +101,13 @@ export class SubmissionsComponent implements OnInit {
     this.code_view = of(true);
   }
 
+  open_code(index : number) {
+    this.submission_language = 'cpp';
+    this.submission_code = this.submissions_array[index]['code'];
+    this.table_view = of(false);
+    this.code_view = of(true);
+  }
+
   open_log(index : number) {
     this.table_view = of(false);
     this.code_view = of(false);

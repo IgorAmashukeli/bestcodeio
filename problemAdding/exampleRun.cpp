@@ -18,7 +18,7 @@ int helper(int a, int b) {
 int main() {
   int test_case_num = 0;
   int test_case_count = 3;
-
+  int time_limit_seconds = 1;
   int arr[3][2];
   arr[0][0] = 1;
   arr[0][1] = 2;
@@ -49,8 +49,8 @@ int main() {
       std::cout << "WA!\n";
       std::cout << test_case_num << "\n";
       std::cout << "input: " << i << " " << j << "\n";
-      std::cout << "correct output: " << result << "\n";
-      std::cout << "your output: " << correct_result << "\n";
+      std::cout << "correct output: " << correct_result << "\n";
+      std::cout << "your output: " << result << "\n";
       return 0;
     }
     test_case_num++;
@@ -61,8 +61,3 @@ int main() {
 
   return 0;
 }
-
-
-
-
-

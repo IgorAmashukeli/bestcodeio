@@ -3,10 +3,8 @@
 #include <iostream>
 
 int summa(int n, int k) {
-    return n + k;
-}
-
-std::chrono::milliseconds max_time(0);
+    return
+}std::chrono::milliseconds max_time(0);
 
 
 int helper(int a, int b) {
@@ -23,7 +21,7 @@ int helper(int a, int b) {
 
 int main() {
     int test_case_num = 0;
-    const int time_limit_seconds = 1; 
+    int time_limit_seconds = 1; 
 
     for (int i = 0; i < 10; ++i) {
         for (int j = 0; j < 10; ++j) {
@@ -44,7 +42,7 @@ int main() {
             if (result != correct_result) {
                 std::cout << "WA!\n";
                 std::cout << test_case_num << "\n";
-                std::cout << "input: " << i << " " << j << "\n";
+                std::cout << "input: " << "n = " << i << ", k = " << j << "\n";
                 std::cout << "correct output: " << correct_result << "\n";
                 std::cout << "your output: " << result << "\n";
                 return 0;
@@ -56,4 +54,4 @@ int main() {
     std::cout << "OK\n";
     std::cout << max_time << "\n";
     return 0;
-}    
+}

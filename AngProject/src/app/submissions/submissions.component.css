@@ -33,6 +33,15 @@ td {
 }
 
 
+.runtime-OK {
+  color:green;
+}
+
+.runtime-not-OK {
+  color : white;
+}
+
+
 .status-OK:hover {
   color : lightgreen;
 }
@@ -54,6 +63,16 @@ table {
   color: rgb(253, 151, 31);
   background-color: rgb(68, 68, 68);
   border: none;
+}
+
+.open-code {
+  color: rgb(102, 217, 239);
+  background-color: rgb(68, 68, 68);
+  border: none;
+}
+
+.open-code:hover {
+  color: rgb(102, 217, 239);
 }
 
 .open-proof:hover {

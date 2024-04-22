@@ -28,8 +28,16 @@ export class RightWorkSpaceComponent implements OnInit, OnChanges {
   @Input() mathResponse: string = '';
   @Input() programmingResponse: string = '';
   @Input() OK: boolean = false;
+  @Input() WA: boolean = false;
+  @Input() status: string = '';
+  @Input() show_tests: boolean = true;
+  @Input() test_case_wa_run : number = -1;
+  @Input() input_wa_run : string = '';
+  @Input() output_wa_run : string = '';
+  @Input() your_output_wa_run : string = '';
   @Input() proof_loading: Observable<boolean> = of(true);
   @Input() code_loading: Observable<boolean> = of(true);
+  @Input() submit_not_run : boolean = true;
 
   code_languages: Array<Array<string>> = [[]];
   initial_codes: any = {};
@@ -92,13 +100,11 @@ export class RightWorkSpaceComponent implements OnInit, OnChanges {
       !changes['selectedLanguage'].firstChange
     ) {
       if (typeof localStorage !== 'undefined') {
-        // Update current code
         const storedCodes = localStorage.getItem(this.routeKey);
         this.initial_codes = storedCodes
           ? JSON.parse(storedCodes)
           : this.initial_codes;
 
-        // Store the updated initial_codes array in local storage
 
         if (
           this.selectedLanguage &&
@@ -110,7 +116,6 @@ export class RightWorkSpaceComponent implements OnInit, OnChanges {
 
         this.cur_code = this.initial_codes[this.selectedLanguage];
 
-        // Update previous language
         this.previous_language = this.selectedLanguage;
       }
     }
@@ -118,7 +123,6 @@ export class RightWorkSpaceComponent implements OnInit, OnChanges {
 
   saveCodesToLocalStorage() {
     this.initial_codes[this.selectedLanguage] = this.cur_code;
-    // Save initial_codes array to local storage before the page reloads
     localStorage.setItem(this.routeKey, JSON.stringify(this.initial_codes));
   }
 
@@ -127,7 +131,6 @@ export class RightWorkSpaceComponent implements OnInit, OnChanges {
   }
 
   parseInputOutput(inputOutputString: string) {
-    // Extract input, output, and explanation using regular expressions
     const inputMatch = inputOutputString.match(
       /<b><b>Input<\/b><\/b>: (.*?)<br>/
     );
@@ -138,17 +141,15 @@ export class RightWorkSpaceComponent implements OnInit, OnChanges {
       /<b><b>Explanation<\/b><\/b>: (.*?)$/
     );
 
-    // Extracting the captured groups
     const input = inputMatch ? inputMatch[1].trim() : '';
     const output = outputMatch ? outputMatch[1].trim() : '';
     const explanation = explanationMatch ? explanationMatch[1].trim() : '';
 
-    // Return the input, output, and explanation as an object
+
     return { inp: input, outp: output };
   }
 
   ngOnDestroy() {
-    // Remove the event listener when the component is destroyed
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       window.removeEventListener(
         'beforeunload',

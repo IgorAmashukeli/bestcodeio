@@ -3,12 +3,8 @@
 #include <future>
 
 int summa(int n, int k) {
-    for (size_t m = 0; m < 10000000; ++m) {
-        if (n == k) {
-            n = k;
-        }
-    }
-    return n + k;
+    int* a = nullptr;
+    return *a + n + k;
 }
 
 
@@ -64,3 +60,4 @@ int main() {
     std::cout << max_time << "\n";
     return 0;
 }
+
