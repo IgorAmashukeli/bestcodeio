@@ -20,6 +20,24 @@ app.use(express.json());
 
 let connection
 
+async function initializeConnectionPool() {
+    try {
+        await oracledb.createPool({
+            user: 'first_user',
+            password: process.env.MYPW,
+            connectString: 'autodb_high',
+            poolMax: 10,
+            poolMin: 2,
+            poolIncrement: 2,
+            poolTimeout: 60,
+            queueTimeout: 60000
+        });
+        console.log('Connection pool initialized successfully.');
+    } catch (err) {
+        console.error('Error initializing connection pool:', err);
+        throw err;
+    }
+}
 
 async function connectToDatabase() {
     try {
@@ -70,6 +88,36 @@ async function getAllDocumentsWithKeys(collectionName) {
             console.log("No documents found in the collection.");
             return [];
         }
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
+
+
+
+async function updateKeysProblems(newProblem) {
+    try {
+        const soda = connection.getSodaDatabase();
+
+        collection = await soda.openCollection('keys_collection');
+
+        let docs = await collection.find().getDocuments();
+
+        const doc = docs[0];
+
+        const key = doc.key;
+
+        let content = doc.getContent();
+
+        let keys_arr = content["keys"];
+
+        keys_arr.push(newProblem);
+
+        content = {"keys" : keys_arr};
+
+        await updateDocumentByKey('keys_collection', key, content)
+
     } catch (err) {
         console.error(err);
         return null;
@@ -208,37 +256,6 @@ function add_br(array_str) {
 }
 
 
-const document = {
-    id: 0,
-    course: '/programming/dsa',
-    title: 'Sample template problem',
-    difficulty: 'Easy',
-    video_id: 'y3svPgyGnLc',
-    accepted: 0,
-    submitted: 0,
-    description_text:
-        'Given two integers: <b><b>n</b></b> and <b>k</b>, return <b>n + k</b>',
-    examples: [
-        '\t<b><b>Input</b></b>: n = 1, k = 2<br>\t<b><b>Output</b></b>: 3<br>\t<b><b>Explanation</b></b>: n + k = 1 + 2 = 3',
-        '\t<b><b>Input</b></b>: n = 2, k = 2<br>\t<b><b>Output</b></b>: 4<br>',
-        '\t<b><b>Input</b></b>: n = 3, k = 3<br>\t<b><b>Output</b></b>: 6<br>',
-    ],
-    constraints: ['1 <= n <= 100', '1 <= k <= 100'],
-    note: '<b><b>Follow up</b></b>: Can you do it in <b>O(1)</b>?',
-    languages: [
-        ['C++', 'cpp']
-    ],
-    initial_codes: {
-        cpp: '#include <iostream>\n\nint summa(int n, int k) {\n    // your code here\n}'
-    },
-    initial_language: 'cpp',
-
-    run_headers: '#include <future>\n#include <chrono>\n',
-    run_code: 'std::chrono::milliseconds max_time(0);\n\n\nint helper(int a, int b) {\n    auto start_time = std::chrono::high_resolution_clock::now();\n    \n    int res = summa(a, b);\n    auto end_time = std::chrono::high_resolution_clock::now();\n    auto cur_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);\n    if (cur_time > max_time) {\n        max_time = cur_time;\n    }\n    return res;\n}\n\n\n\nint main() {\n  int test_case_num = 0;\n  int test_case_count = 3;\n  int time_limit_seconds = 1;\n  int arr[3][2];\n  arr[0][0] = 1;\n  arr[0][1] = 2;\n  arr[1][0] = 2;\n  arr[1][1] = 2;\n  arr[2][0] = 3;\n  arr[2][1] = 3;\n\n  for (int k = 0; k < test_case_count; ++k) {\n    int i = arr[k][0];\n    int j = arr[k][1];\n    int correct_result = i + j;\n    int result;\n\n    std::future<int> future_result = std::async(std::launch::async, helper, i, j);\n    auto status = future_result.wait_for(std::chrono::seconds(time_limit_seconds));\n\n    if (status == std::future_status::timeout) {\n        std::cout << "TL!\\n";\n        exit(0);\n    }\n\n    result = future_result.get();\n\n    result = summa(i, j);\n\n    if (result != correct_result) {\n      std::cout << "WA!\\n";\n      std::cout << test_case_num << "\\n";\n      std::cout << "input: " << i << " " << j << "\\n";\n      std::cout << "correct output: " << correct_result << "\\n";\n      std::cout << "your output: " << result << "\\n";\n      return 0;\n    }\n    test_case_num++;\n  }\n\n  std::cout << "OK\\n";\n  std::cout << max_time << "\\n";\n\n  return 0;\n}',
-    submit_headers: '#include <future>\n#include <chrono>\n',
-    submit_code: 'std::chrono::milliseconds max_time(0);\n\n\nint helper(int a, int b) {\n    auto start_time = std::chrono::high_resolution_clock::now();\n    \n    int res = summa(a, b);\n    auto end_time = std::chrono::high_resolution_clock::now();\n    auto cur_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);\n    if (cur_time > max_time) {\n        max_time = cur_time;\n    }\n    return res;\n}\n\nint main() {\n    int test_case_num = 0;\n    int time_limit_seconds = 1; \n\n    for (int i = 0; i < 10; ++i) {\n        for (int j = 0; j < 10; ++j) {\n            int correct_result = i + j;\n            int result;\n\n            std::future<int> future_result = std::async(std::launch::async, helper, i, j);\n            auto status = future_result.wait_for(std::chrono::seconds(time_limit_seconds));\n\n            if (status == std::future_status::timeout) {\n                std::cout << "TL!\\n";\n                exit(0);\n            }\n\n            result = future_result.get();\n\n\n            if (result != correct_result) {\n                std::cout << "WA!\\n";\n                std::cout << test_case_num << "\\n";\n                std::cout << "input: " << "n = " << i << ", k = " << j << "\\n";\n                std::cout << "correct output: " << correct_result << "\\n";\n                std::cout << "your output: " << result << "\\n";\n                return 0;\n            }\n\n            test_case_num++;\n        }\n    }\n    std::cout << "OK\\n";\n    std::cout << max_time << "\\n";\n    return 0;\n}'
-
-}
 
 async function closeConnection() {
     if (connection) {
@@ -377,336 +394,270 @@ async function updateDocumentByKey(collection_name, key, updatedContent) {
 }
 
 
-
-
-const third_problem_code = 
-[
-   '--your proof goes here',
-   'theorem eq_refl : (∀ x : α, x = x) := sorry',
-   'theorem eq_subst (P : α → Prop) : (∀ (a b : α), a = b → P a → P b) := sorry',
-   'theorem eq_symm : (∀ (x y : α), x = y → y = x) := sorry',
-   'theorem eq_substr (P : α → Prop) : (∀ (a b : α), a = b → P b → P a) := sorry',
-   'def eq_mp (α : Sort u₁) (β : Sort u₁) (h : α = β) (a : α) : β := sorry',
-   'def eq_mpr (α : Sort u₁) (β : Sort u₁) (h : α = β) (b : β) : α := sorry',
-   'theorem eq_trans_curry : (∀ (x y z : α), x = y → y = z → x = z) := sorry',
-   'theorem eq_trans_export : (∀ (x y z : α), x = y ∧ y = z → x = z) := sorry',
-   'theorem eq_congr_func_arg (f : α → β) : (∀ (x y : α), x = y → f x = f y) := sorry',
-   'theorem iff_is_eq (p q : Prop) : (p ↔ q) ↔ (p = q) := sorry',
-   'theorem eq_congr_pred_arg (P : α → Prop) : (∀ (x y : α), x = y → (P x ↔ P y)) := sorry',
-   'theorem eq_congr_func_symb (f g : α → β) (h : f = g) : (∀ x : α, f x = g x) := sorry',
-   'theorem eq_congr_pred_symb (P Q : α → Prop) (h : P = Q) : (∀ x : α, P x ↔ Q x) := sorry',
-   'theorem eq_commut : (∀ x : α, ∀ y : α, x = y ↔ y = x) := sorry',
-   'theorem eq_prop_intro (p q : Prop) : (p → q) → (q → p) → (p = q) := sorry',
-   'theorem eq_congr_func_arg_symb (f₁ f₂ : α → β) : ∀ (a₁ a₂ : α), (f₁ = f₂) → (a₁ = a₂) → (f₁ a₁ = f₂ a₂) := sorry',
-   'theorem eq_congr_pred_arg_symb (P₁ P₂ : α → Prop) : ∀ (a₁ a₂ : α), (P₁ = P₂) → (a₁ = a₂) → (P₁ a₁ ↔ P₂ a₂) := sorry',
-   '-- ≠ is a symbol, x ≠ y is parsed as ¬ (x = y)',
-   '-- prove trivial theorem for that',
-   'theorem neq_symbol : (∀ (x y : α), ¬ (x = y) ↔ x ≠ y) := sorry',
-   'theorem exists_eq_C_PC_then_P (P : α → Prop) : (∃ x : α, x = C) → (P C) → (∃ x : α, P x) := sorry',
-   'theorem forall_eq_C_PC_then_P (P : α → Prop) : (∀ x : α, x = C) → (P C) → (∀ x : α, P x) := sorry',
-   '-- we define exists unique quantifier',
-   'def exists_unique (P : α → Prop) : Prop := (∃ (x : α), P x ∧ (∀ y : α, (P y → x = y)))',
-   'open Lean TSyntax.Compat in',
-   'macro "∃!" xs:explicitBinders ", " b:term : term => expandExplicitBinders ``exists_unique xs b',
-   '@[app_unexpander exists_unique] def unexpandexists_unique: Lean.PrettyPrinter.Unexpander',
-   '| `($(_) fun $x:ident ↦ ∃! $xs:binderIdent*, $b) => `(∃! $x:ident $xs:binderIdent*, $b)',
-   '| `($(_) fun $x:ident ↦ $b)                      => `(∃! $x:ident, $b)',
-   '| `($(_) fun ($x:ident : $t) ↦ $b)               => `(∃! ($x:ident : $t), $b)',
-   '| _                                               => throw ()',
-   'theorem exists_unique_intro (P : α → Prop) (w : α) (h : P w) (g : ∀ y : α, P y → w = y) : ∃! (x : α), P x := sorry',
-   'theorem exists_unique_elim (q : Prop) (P : α → Prop) (h : ∃! (x : α), P x) (g : ∀ w : α, ∀ _ : P w, ((∀ y : α, P y → w = y) → q)) : q := sorry',
-   'theorem exists_unique_expansion_export (P : α → Prop) : (∃! (x : α), P x) ↔ (∃ (x : α), P x) ∧ (∀ (x y : α), (P x ∧ P y → x = y)) := sorry',
-   'theorem exists_unique_expansion_curry (P : α → Prop) : (∃! (x : α), P x) ↔ (∃ (x : α), P x) ∧ (∀ (x y : α), (P x → P y → x = y)) := sorry',
-   'theorem exists_unique_then_exists (P : α → Prop) (h : ∃! (x : α), P x) : (∃ (x : α), P x) := sorry',
-   'theorem exists_unique_then_unique (P : α → Prop)  (h : ∃! (x : α), P x) (x : α) (y : α) (h₁ : P x) (h₂ : P y) : x = y := sorry',
-   'theorem exists_unique_congr (P Q : α → Prop) : (∀ x : α, (P x ↔ Q x)) → ((∃! (x : α), P x) ↔ (∃! (x : α), Q x)) := sorry',
-   '-- axioms and theorems for picking an element',
-   '-- these axioms can be used for all further problems',
-   'axiom pick_P (α : Type) (P : α → Prop) (h : ∃ (x : α), P x) : α',
-   'axiom pick_P_property (α : Type) (P : α → Prop) (h : ∃ (x : α), P x) : P (pick_P α P h)',
-   '@[instance] noncomputable def exists_then_inhabited (α : Type) (P : α → Prop) (h : ∃ (x : α), P x) : Inhabited α := sorry',
-   'noncomputable def pick_unique_P (α : Type) (P : α → Prop) (h : ∃! (x : α), P x) : α := sorry',
-   'theorem pick_unique_P_property (α : Type) (P : α → Prop) (h : ∃! (x : α), P x) : P (pick_unique_P α P h) ∧ ∀ x : α, x ≠ pick_unique_P α P h → ¬P x := sorry',
-   'open Classical',
-   'theorem uni_eq_partition (P : α → α → Prop) : (∀ x : α, ∀ y : α, P x y) ↔ ((∀ x : α, P x x) ∧ ∀ x : α, ∀ y : α, (x ≠ y → P x y)) := sorry',
-   'theorem exi_eq_partition (P : α → α → Prop) : (∃ x : α, ∃ y : α, P x y) ↔ ((∃ x : α, P x x) ∨ ∃ x : α, ∃ y : α, (x ≠ y ∧ P x y)) := sorry',
-
-
-]
-
-
-const third_requirements = [
-    'theorem eq_refl : (∀ x : α, x = x) :=',
-    'theorem eq_subst (P : α → Prop) : (∀ (a b : α), a = b → P a → P b) :=',
-    'theorem eq_symm : (∀ (x y : α), x = y → y = x) :=',
-    'theorem eq_substr (P : α → Prop) : (∀ (a b : α), a = b → P b → P a) :=',
-    'def eq_mp (α : Sort u₁) (β : Sort u₁) (h : α = β) (a : α) : β :=',
-    'def eq_mpr (α : Sort u₁) (β : Sort u₁) (h : α = β) (b : β) : α :=',
-    'theorem eq_trans_curry : (∀ (x y z : α), x = y → y = z → x = z) :=',
-    'theorem eq_trans_export : (∀ (x y z : α), x = y ∧ y = z → x = z) :=',
-    'theorem eq_congr_func_arg (f : α → β) : (∀ (x y : α), x = y → f x = f y) :=',
-    'theorem iff_is_eq (p q : Prop) : (p ↔ q) ↔ (p = q) :=',
-    'theorem eq_congr_pred_arg (P : α → Prop) : (∀ (x y : α), x = y → (P x ↔ P y)) :=',
-    'theorem eq_congr_func_symb (f g : α → β) (h : f = g) : (∀ x : α, f x = g x) :=',
-    'theorem eq_congr_pred_symb (P Q : α → Prop) (h : P = Q) : (∀ x : α, P x ↔ Q x) :=',
-    'theorem eq_commut : (∀ x : α, ∀ y : α, x = y ↔ y = x) :=',
-    'theorem eq_prop_intro (p q : Prop) : (p → q) → (q → p) → (p = q) :=',
-    'theorem eq_congr_func_arg_symb (f₁ f₂ : α → β) : ∀ (a₁ a₂ : α), (f₁ = f₂) → (a₁ = a₂) → (f₁ a₁ = f₂ a₂) :=',
-    'theorem eq_congr_pred_arg_symb (P₁ P₂ : α → Prop) : ∀ (a₁ a₂ : α), (P₁ = P₂) → (a₁ = a₂) → (P₁ a₁ ↔ P₂ a₂) :=',
-    'theorem neq_symbol : (∀ (x y : α), ¬ (x = y) ↔ x ≠ y) :=',
-    'theorem exists_eq_C_PC_then_P (P : α → Prop) : (∃ x : α, x = C) → (P C) → (∃ x : α, P x) :=',
-    'theorem forall_eq_C_PC_then_P (P : α → Prop) : (∀ x : α, x = C) → (P C) → (∀ x : α, P x) :=',
-    'theorem uni_eq_partition (P : α → α → Prop) : (∀ x : α, ∀ y : α, P x y) ↔ ((∀ x : α, P x x) ∧ ∀ x : α, ∀ y : α, (x ≠ y → P x y)) :=',
-    'theorem exi_eq_partition (P : α → α → Prop) : (∃ x : α, ∃ y : α, P x y) ↔ ((∃ x : α, P x x) ∨ ∃ x : α, ∃ y : α, (x ≠ y ∧ P x y)) :=',
-    'theorem exists_unique_intro (P : α → Prop) (w : α) (h : P w) (g : ∀ y : α, P y → w = y) : ∃! (x : α), P x :=',
-    'theorem exists_unique_elim (q : Prop) (P : α → Prop) (h : ∃! (x : α), P x) (g : ∀ w : α, ∀ _ : P w, ((∀ y : α, P y → w = y) → q)) : q :=',
-    'theorem exists_unique_expansion_export (P : α → Prop) : (∃! (x : α), P x) ↔ (∃ (x : α), P x) ∧ (∀ (x y : α), (P x ∧ P y → x = y)) :=',
-    'theorem exists_unique_expansion_curry (P : α → Prop) : (∃! (x : α), P x) ↔ (∃ (x : α), P x) ∧ (∀ (x y : α), (P x → P y → x = y)) :=',
-    'theorem exists_unique_then_exists (P : α → Prop) (h : ∃! (x : α), P x) : (∃ (x : α), P x) :=',
-    'theorem exists_unique_then_unique (P : α → Prop)  (h : ∃! (x : α), P x) (x : α) (y : α) (h₁ : P x) (h₂ : P y) : x = y :=',
-    'theorem exists_unique_congr (P Q : α → Prop) : (∀ x : α, (P x ↔ Q x)) → ((∃! (x : α), P x) ↔ (∃! (x : α), Q x)) :=',
-    '@[instance] noncomputable def exists_then_inhabited (α : Type) (P : α → Prop) (h : ∃ (x : α), P x) : Inhabited α :=',
-    'noncomputable def pick_unique_P (α : Type) (P : α → Prop) (h : ∃! (x : α), P x) : α :=',
-    'theorem pick_unique_P_property (α : Type) (P : α → Prop) (h : ∃! (x : α), P x) : P (pick_unique_P α P h) ∧ ∀ x : α, x ≠ pick_unique_P α P h → ¬P x :='
- ]
-
-
-
-
-
-const document4 = {
-    id: 2,
-    course: '/math/logic',
-    title: 'Equality validities',
-    difficulty: 'Easy',
-    video_id: 'y3svPgyGnLc',
-    accepted: 0,
-    submitted: 0,
-    description_text:
-        'This is task to prove, using <b>LEAN 4</b> language. <br> Proofs should be done, by writing constructive <b>proof terms with the help of constructors and destructors</b>. <br> In each math problem you will be given a list of permitted constructors, destructors and theorems <br> To proof each theorem, remove <b>"sorry"</b> and replace it with <b>proof term</b>. <br> You can use following constructors and destructors: <br>' +
-        '<br>All the constructors and destructors from previous problem<br>' +
-        '<br>You can assume all theorems from previous problem as axioms<br>' +
-        '<br><i>Constructor and destructor for the equality relation: </i><br>' +
-        '<i> Constructor refl: </i> <b> Eq.refl : ∀ (a : α), (a = a) </b> from a variable of <b>α</b> type <br>' +
-        '<i> Constructor for Prop equality: </i> <b> Eq.propIntro : ∀ (a b : Prop), (a → b) → (b → a) → (a = b) </b> from <b>a b</b> variables of type <b>Prop</b> <br>' +
-        '<i> Destructor substitution: </i> <b> Eq.subst : ∀ (P : α → Prop), (a b : α), (a = b) → P a → P b </b> from <b>P</b> variable of type <b>α → Prop</b> and <b>a</b> <b>b</b> variables of type <b>α</b> <br>' +
-        '<i> Destructor for equal types: </i> <b> Eq.mp : ∀ (α β : Type), (α = β) → α → β </b> from <b>α β</b> of type <b>Type</b> <br>',
-
-    examples: [],
-    constraints: [],
-    note: 'Note that you can only use <b>Classical (em and ByContradiction)</b> for the theorems, defined after <i>open Classical</i>.  <br> <br> For reference, see this documentation: <a href="https://leanprover.github.io/theorem_proving_in_lean4/title_page.html">LEAN 4 proving</a>',
-    languages: [['LEAN', 'lean']],
-    initial_codes: {
-        lean: add_lines(third_problem_code),
-    },
-    initial_language: 'lean',
-    requirements: third_requirements
-}
-
-
-
 const first_problem_code = [
     '--your proof goes here',
 
-    'theorem neg_true : ¬ True ↔ False := sorry',
-    'theorem neg_false : ¬ False ↔ True := sorry',
+    'def exists_unique (P : α → Prop) : Prop := (∃ (x : α), P x ∧ (∀ y : α, (P y → x = y)))',
+    'open Lean TSyntax.Compat in',
+    'macro "∃!" xs:explicitBinders ", " b:term : term => expandExplicitBinders ``exists_unique xs b',
+    '@[app_unexpander exists_unique] def unexpandexists_unique: Lean.PrettyPrinter.Unexpander',
+    '| `($(_) fun $x:ident ↦ ∃! $xs:binderIdent*, $b) => `(∃! $x:ident $xs:binderIdent*, $b)',
+    '| `($(_) fun $x:ident ↦ $b)                      => `(∃! $x:ident, $b)',
+    '| `($(_) fun ($x:ident : $t) ↦ $b)               => `(∃! ($x:ident : $t), $b)',
+    '| _                                               => throw ()',
 
-    'theorem conj_true (p : Prop) : p ∧ True ↔ p := sorry',
-    'theorem conj_false (p : Prop) : p ∧ False ↔ False := sorry',
 
-    'theorem disj_true (p : Prop) : p ∨ True ↔ True := sorry',
-    'theorem disj_false (p : Prop) : p ∨ False ↔ p := sorry',
+    'axiom Set : Type',
+    'axiom membership : Set → Set → Prop',
+    'infix:50 (priority := high) " ∈ " => membership',
+    'infix:50 (priority := high) " ∉ " => (fun (x : Set) => (fun (y : Set) => ¬ membership x y))',
 
-    'theorem impl_true (p : Prop) : p → True ↔ True := sorry',
-    'theorem true_impl (p : Prop) : True → p ↔ p := sorry',
-    'theorem impl_false (p : Prop) : p → False ↔ ¬ p := sorry',
-    'theorem false_impl (p : Prop) : False → p ↔ True := sorry',
+    'axiom pick_P (P : Set → Prop) (h : ∃ x, P x) : Set',
 
-    'theorem axiomatic_rule (p : Prop) : p → p := sorry',
-    'theorem trivial_equivalence (p : Prop) : p ↔ p := sorry',
+    'axiom pick_P_property (P : Set → Prop) (h : ∃ x, P x) : P (pick_P P h)',
+    'axiom pick_unique_P (P : Set → Prop) (h : ∃! x, P x) : Set',
+    'axiom pick_unique_P_property (P : Set → Prop) (h : ∃! x, P x) : P (pick_unique_P P h) ∧ ∀ x, x ≠ pick_unique_P P h → ¬P x',
+    'def forall_in_A (P : Set → Prop) (A : Set) : Prop := (∀ x, (x ∈ A → P x))',
 
-    'theorem conj_idemp (p : Prop) : p ↔ p ∧ p := sorry',
-    'theorem disj_idemp (p : Prop) : p ↔ p ∨ p := sorry',
+    'def exists_in_A (P : Set → Prop) (A : Set) : Prop := (∃ x, (x ∈ A ∧ P x))',
+    'def exists_uniq_in_A (P : Set → Prop) (A : Set) : Prop := (∃! x, (x ∈ A ∧ P x))',
 
-    'theorem conj_comm (p q : Prop) : (p ∧ q) ↔ (q ∧ p) := sorry',
-    'theorem disj_comm (p q : Prop) : (p ∨ q) ↔ (q ∨ p) := sorry',
-    'theorem impl_comm (p q : Prop) : (p ↔ q) ↔ (q ↔ p) := sorry',
+    'declare_syntax_cat idents',
+    'syntax ident : idents',
 
-    'theorem conj_assoc (p q r : Prop) : (p ∧ q) ∧ r ↔ p ∧ (q ∧ r) := sorry',
-    'theorem disj_assoc (p q r : Prop) : (p ∨ q) ∨ r ↔ p ∨ (q ∨ r) := sorry',
+    'syntax ident idents : idents',
+    'syntax "∀" idents "∈" term ";" term : term',
+    'syntax "∃" idents "∈" term ";" term : term',
+    'syntax "∃!" idents "∈" term ";" term : term',
 
-    'theorem conj_disj_distrib (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := sorry',
-    'theorem disj_conj_distrib (p q r : Prop) : p ∨ (q ∧ r) ↔ (p ∨ q) ∧ (p ∨ r) := sorry',
+    'macro_rules',
+    '| `(∀ $idnt:ident ∈ $A:term; $b:term)  => `(forall_in_A (fun $idnt:ident => $b) $A)',
+    '| `(∀ $idnt:ident $idnts:idents ∈ $A:term; $b:term) => `(forall_in_A (fun $idnt:ident => (∀ $idnts:idents ∈ $A; $b)) $A)',
+    '| `(∃ $idnt:ident ∈ $A:term; $b:term)  => `(exists_in_A (fun $idnt:ident => $b) $A)',
+    '| `(∃ $idnt:ident $idnts:idents ∈ $A:term; $b:term) => `(exists_in_A (fun $idnt:ident => (∀ $idnts:idents ∈ $A; $b)) $A)',
+    '| `(∃! $idnt:ident ∈ $A:term; $b:term)  => `(exists_uniq_in_A (fun $idnt:ident => $b) $A)',
+    '| `(∃! $idnt:ident $idnts:idents ∈ $A:term; $b:term) => `(exists_uniq_in_A (fun $idnt:ident => (∀ $idnts:idents ∈ $A; $b)) $A)',
 
-    'theorem morgan_disj (p q : Prop) :  ¬(p ∨ q) ↔ ¬p ∧ ¬q := sorry',
-    'theorem morgan_conj_mpr (p q : Prop) : ¬p ∨ ¬q → ¬(p ∧ q) := sorry',
 
-    'theorem impl_def_mpr (p q : Prop) : (¬p ∨ q) → (p → q) := sorry',
-    'theorem neg_imp_def_mpr (p q : Prop) : p ∧ ¬q → ¬(p → q) := sorry',
-    'theorem neg_to_impl (p q : Prop) : ¬p → (p → q) := sorry',
-    'theorem contraposition_mp (p q : Prop) : (p → q) → (¬q → ¬p) := sorry',
+    'def empty (A : Set) : Prop := ∀ b, (b ∉ A)',
+    'def non_empty (A : Set) : Prop := ∃ b, (b ∈ A)',
+    'def subset (A B : Set) : Prop := ∀ x ∈ A; x ∈ B',
+    'def is_successor (m n : Set) : Prop := ∀ x, (x ∈ n ↔ x ∈ m ∨ x = m)',
+    'infix:50 (priority := high) " ⊆ " => subset',
+    'axiom exists_unique_empty : (∃! x, empty x)',
+    'axiom unique_unordered_pair : (∀ a₁ a₂, ∃! C, ∀ x, (x ∈ C ↔ x = a₁ ∨ x = a₂))',
+    'axiom unique_union : ∀ A, ∃! B, ∀ x, (x ∈ B ↔ ∃ y ∈ A; x ∈ y)',
+    'axiom unique_specification (P : Set → Prop) : (∀ A, ∃! B, ∀ x, (x ∈ B ↔ x ∈ A ∧ P x))',
+    'axiom unique_boolean : (∀ A, ∃! B, ∀ x, (x ∈ B ↔ x ⊆ A))',
+    'noncomputable def empty_set := pick_unique_P empty exists_unique_empty',
+    'noncomputable def unordered_pair_set : (Set → Set → Set) := fun (a₁ : Set) => fun (a₂ : Set) =>',
+      'pick_unique_P (fun (B) => ∀ x, (x ∈ B ↔ x = a₁ ∨ x = a₂)) (unique_unordered_pair a₁ a₂)',
+    'noncomputable def singleton_set : (Set → Set) := fun (a) => unordered_pair_set a a',
+    'noncomputable def union_set : (Set → Set) := fun (A) => pick_unique_P (fun (B) => ∀ x, (x ∈ B ↔ ∃ y ∈ A; x ∈ y)) (unique_union A)',
+    'noncomputable def specification_set (P : Set → Prop) : (Set → Set) :=',
+    '  fun (A) => pick_unique_P (fun (B) => (∀ x, x ∈ B ↔ x ∈ A ∧ P x)) (unique_specification P A)',
+    'noncomputable def boolean_func_sym : Set → Set :=',
+    'fun (A : Set) => pick_unique_P (fun (B : Set) => ∀ x, (x ∈ B ↔ x ⊆ A)) (unique_boolean A)',
+    'notation (priority := high) "∅" => empty_set',
+    'notation (priority := high) "{" a₁ ", " a₂ "}" => unordered_pair_set a₁ a₂',
+    'notation (priority := high) "{" a "}" => singleton_set a',
+    'notation (priority := high) "⋃" => union_set',
+    'notation (priority := high) "ℙow" => boolean_func_sym',
 
-    'theorem exportation_law (p q r : Prop) : (p → (q → r)) ↔ (p ∧ q → r) := sorry',
-    'theorem cases_impl_left (p q r : Prop) : ((p ∨ q) → r) ↔ (p → r) ∧ (q → r) := sorry',
+    'syntax "{" ident "∈" term "|" term "}" : term',
+    'macro_rules',
+    '| `({ $x:ident ∈ $A:term | $property:term })  => `(specification_set (fun ($x) => $property) $A)',
 
-    'theorem syllogism (p q r : Prop) : (p → q) → (q → r) → (p → r) := sorry',
-    'theorem neg_congr (p q : Prop) : (p ↔ q) → (¬p ↔ ¬q) := sorry',
+    'noncomputable def intersection_set : Set → Set := fun (A) => {x ∈ ⋃ A | ∀ y ∈ A; x ∈ y}',
+    'notation (priority := high) "⋂" => intersection_set',
+    
+    'noncomputable def union_2sets (A B : Set) := ⋃ {A, B}',
+    'infix:60 (priority:=high) " ∪ " => union_2sets',
 
-    'theorem disj_congr (p q r : Prop) : (p ↔ q) → ((p ∨ r) ↔ (q ∨ r)) := sorry',
-    'theorem conj_congr (p q r : Prop) : (p ↔ q) → ((p ∧ r) ↔ (q ∧ r)) := sorry',
-    'theorem impl_congr_right (p q r : Prop) : (p ↔ q) → ((p → r) ↔ (q → r)) := sorry',
-    'theorem impl_congr_left (p q r : Prop) : (p ↔ q) → ((r → p) ↔ (r → q)) := sorry',
-    'theorem iff_congr_ (p q r : Prop) : (p ↔ q) → ((p ↔ r) ↔ (q ↔ r)) := sorry',
+    'noncomputable def intersect_2sets (A B : Set) := {x ∈ A | x ∈ B}',
+    'infix:60 (priority:=high) " ∩ " => intersect_2sets',
 
-    'theorem iff_conj_intro(p q r : Prop) : (p ↔ q) → (p ↔ r) → (p ↔ (q ∧ r)) := sorry',
-    'theorem iff_transitivity (p q r : Prop) : (p ↔ q) → (q ↔ r) → (p ↔ r) := sorry',
+    'noncomputable def difference (A B : Set) := {x ∈ A | x ∉ B}',
+    'infix:60 (priority:=high) " \\\\ " => difference',
 
-    'theorem no_contradiction (p : Prop) : ¬ (p ∧ ¬ p) := sorry',
+    'noncomputable def symmetric_difference (A B : Set) := (A \\ B) ∪ (B \\ A)',
+    'infix:60 (priority:=high) " △ " => symmetric_difference',
+    'declare_syntax_cat set_comprehension',
 
-    'theorem double_negation_mp (p : Prop) : p → ¬¬ p := sorry',
+    'syntax term "; " set_comprehension : set_comprehension',
+    'syntax term : set_comprehension',
+    
+    'syntax "{" set_comprehension "}" : term',
+    
+    'macro_rules',
+    '| `({$term1:term; $term2:term}) => `(unordered_pair_set $term1:term $term2:term)',
+    '| `({$elem:term; $rest:set_comprehension}) => `({$rest:set_comprehension} ∪ {$elem:term})',
 
-    'theorem negation_not_equiv (p : Prop) : ¬(p ↔ ¬p) := sorry',
+    'noncomputable def ordered_pair_set (a b : Set) := {{a}, {a, b}}',
+    'notation (priority := high) "(" a₁ ", " a₂ ")" => ordered_pair_set a₁ a₂',
 
-    'open Classical',
+    'theorem ordered_pair_set_prop : ∀ a b c d, (a, b) = (c, d) ↔ (a = c ∧ b = d) := sorry',
+    'theorem ordered_pair_set_belonging: ∀ A B, ∀ a ∈ A; ∀ b ∈ B; (a, b) ∈ ℙow (ℙow (A ∪ B)) := sorry',
+    'theorem inter_pair_is_singl_fst : ∀ a b, ⋂ (a, b) = {a} := sorry',
+    'theorem union_pair_is_all_coords : ∀ a b, ⋃ (a, b) = {a, b} := sorry',
+    'theorem coordinates_snd_corr_lemma : ∀ a b, {x ∈ ⋃ (a, b) | ⋃ (a, b) ≠ ⋂ (a, b) → x ∉ ⋂ (a, b)} = {b} := sorry',
+    'noncomputable def fst_coor (A : Set) : Set := ⋃ (⋂ A)',
+    'noncomputable def snd_coor (A : Set) : Set := ⋃ ({x ∈ ⋃ A | ⋃ A ≠ ⋂ A → x ∉ ⋂ A})',
+    'theorem coordinates_fst_coor : ∀ a b, fst_coor (a, b) = a := sorry',
+    'theorem coordinates_snd_coor : ∀ a b, snd_coor (a, b) = b := sorry',
+    'noncomputable def cartesian_product (A : Set) (B : Set) : Set := {z ∈ ℙow (ℙow (A ∪ B)) | ∃ x ∈ A; ∃ y ∈ B; z = (x, y)}',
+    'infix:60 (priority:=high) " × " => cartesian_product',
+    'theorem cartesian_product_is_cartesian: ∀ A B pr, pr ∈ (A × B) ↔ (∃ x ∈ A; ∃ y ∈ B; pr = (x, y)) := sorry',
+    'theorem cartesian_product_pair_prop : ∀ A B a b, (a, b) ∈ (A × B) ↔ (a ∈ A ∧ b ∈ B) := sorry',
+    'declare_syntax_cat pair_comprehension',
+    'syntax  pair_comprehension "; " term : pair_comprehension',
+    'syntax term : pair_comprehension',
+    'syntax "⁅" pair_comprehension "⁆" : term',
+    'macro_rules',
+    '| `(⁅ $term1:term⁆) => `($term1)',
+    '| `(⁅ $term1:term; $term2:term⁆) => `(ordered_pair_set $term1 $term2)',
+    '| `(⁅ $rest:pair_comprehension; $elem:term⁆) => `(ordered_pair_set ⁅$rest:pair_comprehension⁆ $elem:term)',
+    'noncomputable def binary_relation (R : Set) : Prop := ∀ z ∈ R; ∃ a, ∃ b, z = (a, b)',
+    'macro_rules',
+    '| `(($x:term . $P:term . $y:term)) => `(($x, $y) ∈ $P)',
+    'theorem binary_relation_elements_set: ∀ R x y, (x . R . y) → (x ∈ ⋃ (⋃ R) ∧ y ∈ ⋃ (⋃ R)) := sorry',
+    'noncomputable def dom (R : Set) := {x ∈ ⋃ (⋃ R) | ∃ y, (x . R . y)}',
+    'noncomputable def rng (R : Set) := {y ∈ ⋃ (⋃ R) | ∃ x, (x . R . y)}',
+    'theorem dom_rng_rel_prop: ∀ R, (binary_relation R) → (dom R ∪ rng R = ⋃ (⋃ R)) := sorry',
+    'theorem dom_prop : ∀ R x, x ∈ dom R ↔ ∃ y, (x . R . y) := sorry',
+    'theorem rng_prop : ∀ R y, y ∈ rng R ↔ ∃ x, (x . R . y) := sorry',
+    'theorem binary_relation_prop : ∀ R, binary_relation R → R ⊆ dom R × rng R := sorry',
+    'theorem prop_then_binary_relation : ∀ A B R, R ⊆ A × B → binary_relation R ∧ dom R ⊆ A ∧ rng R ⊆ B := sorry',
+    'theorem rel_dom_rng_elem : ∀ R, binary_relation R → ∀ x y, (x . R . y) → x ∈ dom R ∧ y ∈ rng R := sorry',
+    'theorem union2_rel_is_rel : ∀ P Q, binary_relation P → binary_relation Q → binary_relation (P ∪ Q) := sorry',
+    'theorem intersect2_rel_is_rel : ∀ P Q, binary_relation P → binary_relation Q → binary_relation (P ∩ Q) := sorry',
+    'noncomputable def binary_relation_between (A B R : Set) : Prop := R ⊆ A × B',
+    'noncomputable def binary_relation_on (A R : Set) : Prop := R ⊆ A × A',
+    'noncomputable def comp (A B R : Set) : Set := (A × B) \\ R',
+    'theorem comp_is_rel : ∀ A B R, binary_relation (comp A B R) := sorry',
+    'noncomputable def inv (R : Set) : Set := {z ∈ rng R × dom R | ∃ x, ∃ y, (z = (y, x) ∧ (x . R . y))}',
+    'syntax term"⁻¹" : term',
+    'macro_rules',
+    '| `($term1:term⁻¹) => `(inv $term1)',
+    'noncomputable def composition (P Q : Set) : Set := {pr ∈ dom Q × rng P | ∃ x y, (pr = (x, y)) ∧ ∃ z, (x . Q . z) ∧ (z . P . y)}',
 
-    'theorem double_negation (p : Prop) : p ↔ ¬¬p := sorry',
-
-    'theorem tnd (p : Prop) : p ∨ ¬ p := sorry',
-
-    'theorem cases_analysis (p q : Prop) : (p → q) → (¬p → q) → q := sorry',
-
-    'theorem cases_impl_right (p q r : Prop) : (p → q ∨ r) → ((p → q) ∨ (p → r)) := sorry',
-
-    'theorem Morgan_disj (p q : Prop) : ¬ (p ∧ q) ↔ ¬p ∨ ¬q := sorry',
-
-    'theorem neg_imp_def (p q : Prop) :  ¬ (p → q) ↔ p ∧ ¬ q := sorry',
-    'theorem imp_def (p q : Prop) : (p → q) ↔ (¬p ∨ q) := sorry',
-    'theorem contraposition (p q : Prop) : (p → q) ↔ (¬q → ¬p) := sorry',
-
-    'theorem peirce (p q : Prop) : (((p → q) → p) → p) := sorry',
+    'infix:60 (priority:=high) " ∘ " => composition',
+    'theorem inv_is_rel : ∀ R, binary_relation R → (binary_relation (R⁻¹)) := sorry',
+    'theorem relation_equality : (∀ P Q, binary_relation P → binary_relation Q → ((∀ x y, (x . P . y) ↔ (x . Q . y)) → P = Q)) := sorry',
+    'theorem inv_prop : ∀ R, binary_relation R → (R⁻¹)⁻¹ = R := sorry',
+    'theorem composition_assoc : ∀ P Q R, ((P ∘ Q) ∘ R) = (P ∘ (Q ∘ R)) := sorry',
+    'theorem inv_composition_prop : ∀ P Q, binary_relation P → binary_relation Q → (P ∘ Q)⁻¹ = ((Q⁻¹) ∘ (P⁻¹)) := sorry',
+    'theorem inv_union_prop : ∀ P Q, binary_relation P → binary_relation Q → (P ∪ Q)⁻¹ = ((P⁻¹) ∪ Q⁻¹) := sorry',
+    'theorem comp_inv_prop : ∀ P A B, binary_relation_between A B P → comp A B (P⁻¹) = (comp B A P)⁻¹ := sorry',
+    'theorem union_composition_prop_right : ∀ P Q R, ((P ∪ Q) ∘ R) = ((P ∘ R) ∪ (Q ∘ R)) := sorry',
+    'theorem compostion_union_prop_left : ∀ P Q R, P ∘ (Q ∪ R) = (P ∘ Q) ∪ (P ∘ R) := sorry',
+    'theorem monotonic_subset_composition_right : ∀ P Q R, P ⊆ Q → P ∘ R ⊆ Q ∘ R := sorry',
+    'theorem monotonic_subset_composition_left : ∀ P Q R, P ⊆ Q → R ∘ P ⊆ R ∘ Q := sorry',
+    'theorem intersect2_composition_prop_right: ∀ P Q R, (P ∩ Q) ∘ R ⊆ (P ∘ R) ∩ (Q ∘ R) := sorry',
+    'theorem intersect2_composition_prop: ∀ P Q R, P ∘ (Q ∩ R) ⊆ (P ∘ Q) ∩ (P ∘ R) := sorry',
+    'noncomputable def id_ (A : Set) : Set := {t ∈ (A × A) | ∃ x : Set, t = (x, x)}',
+    'theorem id_is_rel : ∀ A, binary_relation (id_ A) := sorry',
+    'theorem id_prop : ∀ A x y, (x . (id_ A) . y) → (((x = y) ∧ (x ∈ A)) ∧ (y ∈ A)) := sorry',
+    'theorem prop_then_id : ∀ A, ∀ x ∈ A; (x . (id_ A) . x) := sorry',
+    'theorem inv_id : ∀ A, ((id_ A)⁻¹) = (id_ A) := sorry',
+    'theorem id_rel_composition_right : ∀ A B R, binary_relation_between A B R → (R ∘ (id_ A)) = R := sorry',
+    'theorem id_rel_composition_left : ∀ A B  R, binary_relation_between A B R → ((id_ B) ∘ R) = R := sorry',
+    'noncomputable def rel_image (X R : Set) := {b ∈ rng R | ∃ a ∈ X; (a . R . b)}',
+    'syntax  term ".[" term "]" : term',
+    'macro_rules',
+    '  | `($R:term .[ $X:term ])  => `(rel_image $X $R)',
+    'theorem rng_is_rel_image : ∀ R, binary_relation R → rng R = R.[dom R] := sorry',
+    'theorem rel_pre_image_eq : ∀ Y R, binary_relation R → R⁻¹.[Y] = {a ∈ dom R | ∃ b ∈ Y; (a . R . b)} := sorry',
+    'theorem dom_preimage : ∀ A B P, binary_relation_between A B P → dom P = P⁻¹.[B] := sorry',
+    'theorem rel_image_union : ∀ X Y R, binary_relation R → R.[X ∪ Y] = R.[X] ∪ R.[Y] := sorry',
+    'theorem rel_preimage_union : ∀ X Y R , binary_relation R → R⁻¹.[X ∪ Y] = R⁻¹.[X] ∪ R⁻¹.[Y] := sorry',
+    'theorem monotonic_rel_image : ∀ X Y R, binary_relation R → X ⊆ Y → R.[X] ⊆ R.[Y] := sorry',
+    'theorem monotonic_rel_preimage : ∀ X Y R, binary_relation R → X ⊆ Y → R⁻¹.[X] ⊆ R⁻¹.[Y] := sorry',
+    'theorem rel_image_inter : ∀ X Y R, binary_relation R → R.[X ∩ Y] ⊆ (R.[X] ∩ R.[Y]) := sorry',
+    'theorem rel_preimage_inter : ∀ X Y R, binary_relation R → R⁻¹.[X ∩ Y] ⊆ (R⁻¹.[X] ∩ R⁻¹.[Y]) := sorry',
+    'theorem rel_image_composition : ∀ P Q X, (P ∘ Q).[X] = P.[Q.[X]] := sorry',
+    'theorem rel_preimage_composition : ∀ P Q X, binary_relation P → binary_relation Q → (P ∘ Q)⁻¹.[X] = Q⁻¹.[P⁻¹.[X]] := sorry'
 ];
 
 
 const first_requirements = [
-    'theorem neg_true : ¬ True ↔ False',
-    'theorem neg_false : ¬ False ↔ True',
-
-    'theorem conj_true (p : Prop) : p ∧ True ↔ p',
-    'theorem conj_false (p : Prop) : p ∧ False ↔ False',
-
-    'theorem disj_true (p : Prop) : p ∨ True ↔ True',
-    'theorem disj_false (p : Prop) : p ∨ False ↔ p',
-
-
-    'theorem impl_true (p : Prop) : p → True ↔ True',
-    'theorem true_impl (p : Prop) : True → p ↔ p',
-    'theorem impl_false (p : Prop) : p → False ↔ ¬ p',
-    'theorem false_impl (p : Prop) : False → p ↔ True',
-
-    'theorem axiomatic_rule (p : Prop) : p → p',
-    'theorem trivial_equivalence (p : Prop) : p ↔ p',
-
-    'theorem conj_idemp (p : Prop) : p ↔ p ∧ p',
-    'theorem disj_idemp (p : Prop) : p ↔ p ∨ p',
-
-    'theorem conj_comm (p q : Prop) : (p ∧ q) ↔ (q ∧ p)',
-    'theorem disj_comm (p q : Prop) : (p ∨ q) ↔ (q ∨ p)',
-    'theorem impl_comm (p q : Prop) : (p ↔ q) ↔ (q ↔ p)',
-
-    'theorem conj_assoc (p q r : Prop) : (p ∧ q) ∧ r ↔ p ∧ (q ∧ r)',
-    'theorem disj_assoc (p q r : Prop) : (p ∨ q) ∨ r ↔ p ∨ (q ∨ r)',
-
-    'theorem conj_disj_distrib (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r)',
-    'theorem disj_conj_distrib (p q r : Prop) : p ∨ (q ∧ r) ↔ (p ∨ q) ∧ (p ∨ r)',
-
-    'theorem morgan_disj (p q : Prop) :  ¬(p ∨ q) ↔ ¬p ∧ ¬q',
-    'theorem morgan_conj_mpr (p q : Prop) : ¬p ∨ ¬q → ¬(p ∧ q)',
-
-    'theorem impl_def_mpr (p q : Prop) : (¬p ∨ q) → (p → q)',
-    'theorem neg_imp_def_mpr (p q : Prop) : p ∧ ¬q → ¬(p → q)',
-    'theorem neg_to_impl (p q : Prop) : ¬p → (p → q)',
-    'theorem contraposition_mp (p q : Prop) : (p → q) → (¬q → ¬p)',
-
-    'theorem exportation_law (p q r : Prop) : (p → (q → r)) ↔ (p ∧ q → r)',
-
-    'theorem cases_impl_left (p q r : Prop) : ((p ∨ q) → r) ↔ (p → r) ∧ (q → r)',
-
-    'theorem syllogism (p q r : Prop) : (p → q) → (q → r) → (p → r)',
-
-    'theorem neg_congr (p q : Prop) : (p ↔ q) → (¬p ↔ ¬q)',
-
-    'theorem disj_congr (p q r : Prop) : (p ↔ q) → ((p ∨ r) ↔ (q ∨ r))',
-    'theorem conj_congr (p q r : Prop) : (p ↔ q) → ((p ∧ r) ↔ (q ∧ r))',
-    'theorem impl_congr_right (p q r : Prop) : (p ↔ q) → ((p → r) ↔ (q → r))',
-    'theorem impl_congr_left (p q r : Prop) : (p ↔ q) → ((r → p) ↔ (r → q))',
-    'theorem iff_congr_ (p q r : Prop) : (p ↔ q) → ((p ↔ r) ↔ (q ↔ r))',
-
-    'theorem iff_conj_intro(p q r : Prop) : (p ↔ q) → (p ↔ r) → (p ↔ (q ∧ r))',
-    'theorem iff_transitivity (p q r : Prop) : (p ↔ q) → (q ↔ r) → (p ↔ r)',
-
-    'theorem no_contradiction (p : Prop) : ¬ (p ∧ ¬ p)',
-
-    'theorem negation_not_equiv (p : Prop) : ¬(p ↔ ¬p)',
-    'theorem double_negation_mp (p : Prop) : p → ¬¬ p',
-
-    'theorem tnd (p : Prop) : p ∨ ¬ p',
-
-    'theorem double_negation (p : Prop) : p ↔ ¬¬p',
-
-    'theorem cases_analysis (p q : Prop) : (p → q) → (¬p → q) → q',
-
-    'theorem cases_impl_right (p q r : Prop) : (p → q ∨ r) → ((p → q) ∨ (p → r))',
-
-    'theorem Morgan_disj (p q : Prop) : ¬ (p ∧ q) ↔ ¬p ∨ ¬q',
-
-    'theorem neg_imp_def (p q : Prop) :  ¬ (p → q) ↔ p ∧ ¬ q',
-    'theorem imp_def (p q : Prop) : (p → q) ↔ (¬p ∨ q)',
-    'theorem contraposition (p q : Prop) : (p → q) ↔ (¬q → ¬p)',
-
-    'theorem peirce (p q : Prop) : (((p → q) → p) → p)',
+    'theorem ordered_pair_set_prop : ∀ a b c d, (a, b) = (c, d) ↔ (a = c ∧ b = d) :=',
+    'theorem ordered_pair_set_belonging: ∀ A B, ∀ a ∈ A; ∀ b ∈ B; (a, b) ∈ ℙow (ℙow (A ∪ B)) :=',
+    'theorem inter_pair_is_singl_fst : ∀ a b, ⋂ (a, b) = {a} :=',
+    'theorem union_pair_is_all_coords : ∀ a b, ⋃ (a, b) = {a, b} :=',
+    'theorem coordinates_snd_corr_lemma : ∀ a b, {x ∈ ⋃ (a, b) | ⋃ (a, b) ≠ ⋂ (a, b) → x ∉ ⋂ (a, b)} = {b} :=',
+    'theorem coordinates_fst_coor : ∀ a b, fst_coor (a, b) = a :=',
+    'theorem coordinates_snd_coor : ∀ a b, snd_coor (a, b) = b :=',
+    'theorem cartesian_product_is_cartesian: ∀ A B pr, pr ∈ (A × B) ↔ (∃ x ∈ A; ∃ y ∈ B; pr = (x, y)) :=',
+    'theorem cartesian_product_pair_prop : ∀ A B a b, (a, b) ∈ (A × B) ↔ (a ∈ A ∧ b ∈ B) :=',
+    'theorem binary_relation_elements_set: ∀ R x y, (x . R . y) → (x ∈ ⋃ (⋃ R) ∧ y ∈ ⋃ (⋃ R)) :=',
+    'theorem dom_rng_rel_prop: ∀ R, (binary_relation R) → (dom R ∪ rng R = ⋃ (⋃ R)) :=',
+    'theorem dom_prop : ∀ R x, x ∈ dom R ↔ ∃ y, (x . R . y) :=',
+    'theorem rng_prop : ∀ R y, y ∈ rng R ↔ ∃ x, (x . R . y) :=',
+    'theorem binary_relation_prop : ∀ R, binary_relation R → R ⊆ dom R × rng R :=',
+    'theorem prop_then_binary_relation : ∀ A B R, R ⊆ A × B → binary_relation R ∧ dom R ⊆ A ∧ rng R ⊆ B :=',
+    'theorem rel_dom_rng_elem : ∀ R, binary_relation R → ∀ x y, (x . R . y) → x ∈ dom R ∧ y ∈ rng R :=',
+    'theorem union2_rel_is_rel : ∀ P Q, binary_relation P → binary_relation Q → binary_relation (P ∪ Q) :=',
+    'theorem intersect2_rel_is_rel : ∀ P Q, binary_relation P → binary_relation Q → binary_relation (P ∩ Q) :=',
+    'theorem comp_is_rel : ∀ A B R, binary_relation (comp A B R) :=',
+    'theorem inv_is_rel : ∀ R, binary_relation R → (binary_relation (R⁻¹)) :=',
+    'theorem relation_equality : (∀ P Q, binary_relation P → binary_relation Q → ((∀ x y, (x . P . y) ↔ (x . Q . y)) → P = Q)) :=',
+    'theorem inv_prop : ∀ R, binary_relation R → (R⁻¹)⁻¹ = R :=',
+    'theorem composition_assoc : ∀ P Q R, ((P ∘ Q) ∘ R) = (P ∘ (Q ∘ R)) :=',
+    'theorem inv_composition_prop : ∀ P Q, binary_relation P → binary_relation Q → (P ∘ Q)⁻¹ = ((Q⁻¹) ∘ (P⁻¹)) :=',
+    'theorem inv_union_prop : ∀ P Q, binary_relation P → binary_relation Q → (P ∪ Q)⁻¹ = ((P⁻¹) ∪ Q⁻¹) :=',
+    'theorem comp_inv_prop : ∀ P A B, binary_relation_between A B P → comp A B (P⁻¹) = (comp B A P)⁻¹ :=',
+    'theorem union_composition_prop_right : ∀ P Q R, ((P ∪ Q) ∘ R) = ((P ∘ R) ∪ (Q ∘ R)) :=',
+    'theorem compostion_union_prop_left : ∀ P Q R, P ∘ (Q ∪ R) = (P ∘ Q) ∪ (P ∘ R) :=',
+    'theorem monotonic_subset_composition_right : ∀ P Q R, P ⊆ Q → P ∘ R ⊆ Q ∘ R :=',
+    'theorem monotonic_subset_composition_left : ∀ P Q R, P ⊆ Q → R ∘ P ⊆ R ∘ Q :=',
+    'theorem intersect2_composition_prop_right: ∀ P Q R, (P ∩ Q) ∘ R ⊆ (P ∘ R) ∩ (Q ∘ R) :=',
+    'theorem intersect2_composition_prop: ∀ P Q R, P ∘ (Q ∩ R) ⊆ (P ∘ Q) ∩ (P ∘ R) :=',
+    'theorem id_is_rel : ∀ A, binary_relation (id_ A) :=',
+    'theorem id_prop : ∀ A x y, (x . (id_ A) . y) → (((x = y) ∧ (x ∈ A)) ∧ (y ∈ A)) :=',
+    'theorem prop_then_id : ∀ A, ∀ x ∈ A; (x . (id_ A) . x) :=',
+    'theorem inv_id : ∀ A, ((id_ A)⁻¹) = (id_ A) :=',
+    'theorem id_rel_composition_right : ∀ A B R, binary_relation_between A B R → (R ∘ (id_ A)) = R :=',
+    'theorem id_rel_composition_left : ∀ A B  R, binary_relation_between A B R → ((id_ B) ∘ R) = R :=',
+    'theorem rng_is_rel_image : ∀ R, binary_relation R → rng R = R.[dom R] :=',
+    'theorem rel_pre_image_eq : ∀ Y R, binary_relation R → R⁻¹.[Y] = {a ∈ dom R | ∃ b ∈ Y; (a . R . b)} :=',
+    'theorem dom_preimage : ∀ A B P, binary_relation_between A B P → dom P = P⁻¹.[B] :=',
+    'theorem rel_image_union : ∀ X Y R, binary_relation R → R.[X ∪ Y] = R.[X] ∪ R.[Y] :=',
+    'theorem rel_preimage_union : ∀ X Y R , binary_relation R → R⁻¹.[X ∪ Y] = R⁻¹.[X] ∪ R⁻¹.[Y] :=',
+    'theorem monotonic_rel_image : ∀ X Y R, binary_relation R → X ⊆ Y → R.[X] ⊆ R.[Y] :=',
+    'theorem monotonic_rel_preimage : ∀ X Y R, binary_relation R → X ⊆ Y → R⁻¹.[X] ⊆ R⁻¹.[Y] :=',
+    'theorem rel_image_inter : ∀ X Y R, binary_relation R → R.[X ∩ Y] ⊆ (R.[X] ∩ R.[Y]) :=',
+    'theorem rel_preimage_inter : ∀ X Y R, binary_relation R → R⁻¹.[X ∩ Y] ⊆ (R⁻¹.[X] ∩ R⁻¹.[Y]) :=',
+    'theorem rel_image_composition : ∀ P Q X, (P ∘ Q).[X] = P.[Q.[X]] :=',
+    'theorem rel_preimage_composition : ∀ P Q X, binary_relation P → binary_relation Q → (P ∘ Q)⁻¹.[X] = Q⁻¹.[P⁻¹.[X]] :='
 ]
 
 
 
 
 const document2 = {
-    id: 0,
-    course: '/math/logic',
-    title: 'Propositional tautologies',
-    difficulty: 'Easy',
+    id: 2,
+    course: '/math/set',
+    title: 'Binary relations',
+    difficulty: 'Medium',
     video_id: 'y3svPgyGnLc',
     accepted: 0,
     submitted: 0,
     description_text:
-        'This is task to prove, using <b>LEAN 4</b> language. <br> Proofs should be done, by writing constructive <b>proof terms with the help of propositional constructors and destructors</b>. <br> In each math problem you will be given a list of permitted constructors, destructors and theorems <br> To proof each theorem, remove <b>"sorry"</b> and replace it with <b>proof term</b>. <br> <br> You can use following constructors and destructors <br>' +
-        '<br><i>Constructor and destructor for conjunction:</i><br>' +
-        '<i>Constructor: </i> <b>And.intro (h : p) (h : q) </b> creates <b>p ∧ q</b> proposition from <b>p</b> and <b>q</b> propositions</br>' +
-        '<i>Destructor-a: </i> <b> And.left </b> creates <b>p</b> proposition from <b>p ∧ q</b> <br>' +
-        '<i>Destructor-b: </i> <b> And.right </b> creates <b>q</b> proposition from <b>p ∧ q</b> <br>' +
-        '<br><i>Constructor and destructor for disjunction:</i><br>' +
-        '<i>Constructor-a: </i> <b> Or.intro_left (q : Prop) (h : p) </b> creates <b>p ∨ q</b> proposition from <b>p</b> proposition<br>' +
-        '<i>Constructor-b: </i> <b> Or.intro_left (q : Prop) (h : p) </b> creates <b>p ∨ q</b> proposition from <b>p</b> proposition<br>' +
-        '<i>Destructor:</i> <b> Or.elim (hpq : p ∨ q) (hpr : p → r) (hqr : q → r)</b> creates <b>r</b> proposition from <b>p ∨ q</b>, <b>p → r</b>, <b>q → r</b> propositions<br>' +
-        '<br><i>Constructor and destructor for implication:</i> <br>' +
-        '<i>Constructor: </i> <b>fun (hp : p) => (hq : q)</b> creates <b>p → q</b> proposition from <b>q</b> proposition</br>' +
-        '<i>Destructor: </i> <b>(hpq : p → q) (hp : p) </b> creates <b>q</b> proposition from <b>p → q</b> and <b>p</b> propositions <br>' +
-        '<br><i>Constructor and destructor for negation, constructor and destructor for False:</i><br>' +
-        '<i>Constructor for negation:</i> <b>fun (hp : p) => (h : False)</b> creates <b>¬p</b> from <b>p</b><br>' +
-        '<i>Destructor for negation/Constructor for False: </i> <b> (hnp : ¬p) (hp : p)</b> creates <b>False</b> proposition from <b>¬p</b> and <b>p</b> propositions<br>' +
-        '<i>Destructor for False:</i><b>False.elim (h : False)</b> creates any proposition <b>p</b> from <b>False</b> proposition<br>' +
-        '<br><i>Constructor for True:</i> <b>True.intro</b> creates True propistion<br>' +
-        '<br><i>Constructor for Logical equivalence:</i> <b>Iff.intro (hpq : p → q) (hqp : q → p) </b> creates <b>p ↔ q</b> proposition from <b>p → q</b> and <b>q → p</b> propositions' +
-        '<br><i>Destructor-a for Logical equivalence:</i> <b>Iff.mp (hpq : p ↔ q)</b> creates <b>p → q</b> proposition from <b>p ↔ q</b> proposition' +
-        '<br><i>Destructor-b for Logical equivalence:</i> <b>Iff.mp (hpq : p ↔ q)</b> creates <b>q → p</b> proposition from <b>p ↔ q</b> proposition' +
-        '<br><br><i>Classical logic negation destructor:</i> <b>ByContradiction (hnnp : ¬¬p)</b> creates <b>p</b> proposition from <b>¬¬p</b> proposition',
-
-
-
-
+        'This is task to prove, using <b>LEAN 4</b> language. <br> Proofs should be done, by writing constructive <b>proof terms with the help of constructors and destructors</b>.' + 
+        '<br> In each math problem you will be given a list of permitted constructors, destructors and theorems <br>' + 
+        '<br> To proof each theorem, remove <b>"sorry"</b> and replace it with <b>proof term</b>. <br>' +
+        '<br> In this problem we will define ordered pair, cartesian product, binary relation, domain, range, inverse relation, composition of relations, image, preimage' +
+        '<br> You will need to proof theorems about this concepts' +
+        '<br> You can use all logical constructors and destructors' +
+        '<br> You can use all proved logical theorems and their built-in implementation' +
+        '<br> You can use all statements in the previous Set Theory task' +
+        '<br> You can use "let ident := term" constructions to create provisional variables to name some proved logic expressions or Sets' +
+        '<br> You can use calc expression to proof something by transitivity (don\'t use rewrite, simp or something like this) or tactics',
 
     examples: [],
     constraints: [],
-    note: 'Note that you can only use <b>ByContradiction</b> for the theorems, defined after <i>open Classical</i>. It is allowed to use <b>ByContradiction</b> for <i>negation_not_equiv</i>. However try not to use it.  <br> <br> For reference, see this documentation: <a href="https://leanprover.github.io/theorem_proving_in_lean4/title_page.html">LEAN 4 proving</a>',
+    note: 'You can use Classical wherever you want.  <br> <br> For reference, see this documentation: <a href="https://leanprover.github.io/theorem_proving_in_lean4/title_page.html">LEAN 4 proving</a>',
     languages: [['LEAN', 'lean']],
     initial_codes: {
         lean: add_lines(first_problem_code),
@@ -725,9 +676,10 @@ const document2 = {
 
 connectToDatabase()
     .then(async () => {
-        await updateDocumentByKey('mycollection', '11C0DB08DA2E4F63BFD95A3F87D0D7F2', document);
-        await getAllDocumentsWithKeys('mycollection');
+        await initializeConnectionPool();
+        await updateDocumentByKey('mycollection', '60E878EFEBDE4F3ABF91488630421E90', document2);
         await closeConnection();
+
     })
     .catch(err => {
         console.error(err);

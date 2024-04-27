@@ -3,7 +3,7 @@
 #include <iostream>
 
 int summa(int n, int k) {
-    return
+    return n + k;
 }std::chrono::milliseconds max_time(0);
 
 

@@ -67,7 +67,7 @@ async function runLEANContainer(data) {
 
                     await container.start();
 
-                    const result = await executeLeanCommandWithTimeout(code, required_theorems, 1);
+                    const result = await executeLeanCommandWithTimeout(code, required_theorems, 4);
                     resolve(result);
                 } catch (error) {
                     console.error('Error creating or starting container:', error);
@@ -76,7 +76,7 @@ async function runLEANContainer(data) {
             } else {
                 try {
                     await container.restart();
-                    const result = await executeLeanCommandWithTimeout(code, required_theorems, 1);
+                    const result = await executeLeanCommandWithTimeout(code, required_theorems, 4);
                     resolve(result);
                 } catch (error) {
                     console.error('Error restarting container:', error);
