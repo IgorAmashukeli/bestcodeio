@@ -1,9 +1,9 @@
 // dialog.component.ts
-import { Component, OnInit } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
+import { Component, Inject, OnInit } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../services/auth.service';
 import { CommonModule } from '@angular/common';
-import { Auth } from '@angular/fire/auth';
+import { Auth, User } from '@angular/fire/auth';
 import { DataService } from '../services/data.service';
 import { firstValueFrom } from 'rxjs';
 

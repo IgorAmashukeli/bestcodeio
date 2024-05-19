@@ -1,7 +1,11 @@
 // dialog.component.ts
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { AuthService } from '../services/auth.service';
 import { CommonModule } from '@angular/common';
+import { DialogService } from '../services/dialog.service';
+import { YouTubePlayerModule } from '@angular/youtube-player';
+import { YtPlayerComponent } from '../yt-player/yt-player.component';
 import { Router } from '@angular/router';
 import { DomSanitizer } from '@angular/platform-browser';
 

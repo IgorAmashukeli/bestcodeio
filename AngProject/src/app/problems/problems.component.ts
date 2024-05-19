@@ -5,9 +5,16 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { DialogService } from '../services/dialog.service';
 import { SolutionDialogComponent } from '../solution_dialog/solution_dialog.component';
 import { AuthService } from '../services/auth.service';
+import {
+  math_problems,
+  programming_problems,
+} from '../problem_list/problem_list';
+
+import { math_indices, programming_indices } from '../app.routes';
+import { Problem } from '../problem_list/problem_list';
 import { NavigationBarComponent } from '../navigation_bar/navigation_bar.component';
 import { DataService } from '../services/data.service';
-import { Observable, Subject, of } from 'rxjs';
+import { Observable, Subject, Subscription, of } from 'rxjs';
 import { Auth, Unsubscribe, User } from '@angular/fire/auth';
 
 @Component({
@@ -38,6 +45,10 @@ export class ProblemsComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
+  
+
+
+
   ngOnInit() {
     this.course_type = this.router.url.split('/')[1];
     const course_route: string = this.router.url.split('/')[2];
@@ -55,13 +66,14 @@ export class ProblemsComponent implements OnInit {
                   if (typeof usersInfo !== 'undefined') {
                     const user_problems = usersInfo[0]['problems'];
                     problem.forEach((item) => {
-                      const key = item.key;
-                      const status = user_problems[key]?.status;
-                      if (status) {
-                        this.user_statuses.push(status);
-                      }
-                    });
+                    const key = item.key;
+                    const status = user_problems[key]?.status;
+                    if (status) {
+                      this.user_statuses.push(status);
+                    }
+                  });
                   }
+                  
                 },
 
                 error: (error: any) => {
@@ -108,7 +120,7 @@ export class ProblemsComponent implements OnInit {
     });
   }
 
-  helper(user: User) {
+  helper(user : User) {
     this.dataService.fetchUserData(user.uid).subscribe({
       next: (usersInfo: any[]) => {
         if (typeof usersInfo !== 'undefined') {
@@ -129,6 +141,7 @@ export class ProblemsComponent implements OnInit {
       },
     });
   }
+
 
   openSolutionDialog(video_id: string = 'y3svPgyGnLc') {
     this.dialogService.openDialog('1200px', '700px', SolutionDialogComponent, {

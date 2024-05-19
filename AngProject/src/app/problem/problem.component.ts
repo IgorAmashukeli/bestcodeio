@@ -1,8 +1,11 @@
 import {
   AfterContentChecked,
+  AfterContentInit,
+  AfterViewInit,
   Component,
   ElementRef,
   HostListener,
+  Renderer2,
   ViewChild,
   ChangeDetectorRef,
 } from '@angular/core';
@@ -16,10 +19,18 @@ import { CommonModule } from '@angular/common';
 import { DescriptionComponent } from '../description/description.component';
 import { SubmissionsComponent } from '../submissions/submissions.component';
 import { Router } from '@angular/router';
+import { math_indices } from '../app.routes';
+import { programming_indices } from '../app.routes';
+import {
+  math_problems,
+  programming_problems,
+} from '../problem_list/problem_list';
+import { Problem } from '../problem_list/problem_list';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { DialogService } from '../services/dialog.service';
 import { WarningDialogComponent } from '../warning_dialog/warning_dialog.component';
+import { HttpClient } from '@angular/common/http';
 import { HttpClientModule } from '@angular/common/http';
 import { DataService } from '../services/data.service';
 import { Observable, firstValueFrom, of } from 'rxjs';
@@ -68,16 +79,16 @@ export class ProblemComponent implements AfterContentChecked {
   programming_response: string = '';
   OK: boolean = false;
   WA: boolean = false;
-  submit_not_run: boolean = false;
+  submit_not_run : boolean = false;
   status: string = '';
   show_tests: boolean = true;
   proof_loading: Observable<boolean> = of(true);
   code_loading: Observable<boolean> = of(true);
   loading_submission = true;
-  test_case_wa_run: number = -1;
-  input_wa_run: string = '';
-  output_wa_run: string = '';
-  your_output_wa_run: string = '';
+  test_case_wa_run : number = -1;
+  input_wa_run : string = '';
+  output_wa_run : string = '';
+  your_output_wa_run : string = '';
 
   assign_fields(problem: any): void {
     this.language_array = problem['languages'];
@@ -90,6 +101,7 @@ export class ProblemComponent implements AfterContentChecked {
   constructor(
     private router: Router,
     private auth: Auth,
+    private http: HttpClient,
     public authService: AuthService,
     public dialogService: DialogService,
     public dataService: DataService,
@@ -166,7 +178,7 @@ export class ProblemComponent implements AfterContentChecked {
       const user = this.auth.currentUser;
       if (user) {
         if (this.OK) {
-          const _ = await firstValueFrom(
+          const result1 = await firstValueFrom(
             this.dataService.solveProblem(
               user.uid,
               this.router.url.split('/')[1],
@@ -176,13 +188,13 @@ export class ProblemComponent implements AfterContentChecked {
           );
         }
 
-        const _ = await firstValueFrom(
+        const result2 = await firstValueFrom(
           this.dataService.addSubmissions(
             {
               code: json_response['code'],
               time: json_response['time'],
               status: json_response['status'],
-              log: json_response['log'],
+              log : json_response['log']
             },
             user.uid,
             this.router.url.split('/')[1],
@@ -216,7 +228,7 @@ export class ProblemComponent implements AfterContentChecked {
       this.show_tests = false;
       this.programming_response = json_response['log'];
       if (this.status == 'OK') {
-        this.programming_response = 'OK! All tests passed.';
+        this.programming_response = 'OK! All tests passed.'
       } else if (this.status == 'WA') {
         this.test_case_wa_run = parseInt(json_response['test_case'], 10) + 1;
         this.input_wa_run = json_response['input'];
@@ -227,7 +239,7 @@ export class ProblemComponent implements AfterContentChecked {
       const user = this.auth.currentUser;
       if (user) {
         if (this.OK) {
-          const _ = await firstValueFrom(
+          const result1 = await firstValueFrom(
             this.dataService.solveProblem(
               user.uid,
               this.router.url.split('/')[1],
@@ -236,14 +248,14 @@ export class ProblemComponent implements AfterContentChecked {
             )
           );
         }
-        const _ = await firstValueFrom(
+        const result2 = await firstValueFrom(
           this.dataService.addSubmissions(
             {
               code: json_response['code'],
               time: json_response['time'],
               status: json_response['status'],
               runtime: json_response['runtime'],
-              log: json_response['log'],
+              log : json_response['log']
             },
             user.uid,
             this.router.url.split('/')[1],
@@ -254,47 +266,47 @@ export class ProblemComponent implements AfterContentChecked {
       }
 
       this.loading_submission = true;
-      if (this.selectedNavItem == 'description_page') {
-        this.selectNavItem('submissions_page');
-      } else {
-      }
+        if (this.selectedNavItem == 'description_page') {
+          this.selectNavItem('submissions_page');
+        } else {
+        }
+
 
       this.loading_submission = true;
       this.code_loading = of(true);
     }
   }
 
-  async run() {
+  async run () {
     this.submit_not_run = false;
 
     this.code_loading = of(false);
     const code = this.rightWorkSpaceComponent.cur_code;
-    const json_response = await firstValueFrom(
-      this.dataService.runProgramming(
-        this.router.url.split('/')[2],
-        this.router.url.split('/')[3],
-        code
-      )
-    );
-    this.OK = json_response['status'] == 'OK';
-    this.WA = json_response['status'] == 'WA';
-    this.status = json_response['status'];
-    console.log(this.status);
-    this.show_tests =
-      this.status !== 'OK' &&
-      this.status !== 'RE' &&
-      this.status != 'CE' &&
-      this.status != 'TL';
-    this.programming_response = json_response['log'];
-    if (this.status == 'OK') {
-      this.programming_response =
-        'OK! All example tests passed. You can try to submit';
-      this.status = 'Example tests passed';
-    } else if (this.status == 'WA') {
-      this.test_case_wa_run = json_response['test_case'];
-      this.rightWorkSpaceComponent.selectedCase = this.test_case_wa_run;
-      this.your_output_wa_run = json_response['yourOutput'];
-    }
-    this.code_loading = of(true);
+      const json_response = await firstValueFrom(
+        this.dataService.runProgramming(
+          this.router.url.split('/')[2],
+          this.router.url.split('/')[3],
+          code
+        )
+      );
+      this.OK = json_response['status'] == 'OK';
+      this.WA = json_response['status'] == 'WA';
+      this.status = json_response['status'];
+      console.log(this.status);
+      this.show_tests = this.status !== 'OK' && this.status !== 'RE' && this.status != 'CE' && this.status != 'TL';
+      this.programming_response = json_response['log'];
+      if (this.status == 'OK') {
+        this.programming_response = 'OK! All example tests passed. You can try to submit'
+        this.status = 'Example tests passed';
+      } else if (this.status == 'WA') {
+        
+        this.test_case_wa_run = json_response['test_case'];
+        this.rightWorkSpaceComponent.selectedCase = this.test_case_wa_run;
+        this.your_output_wa_run = json_response['yourOutput'];
+      }
+      this.code_loading = of(true);
   }
+
+
+
 }

@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { DialogService } from '../services/dialog.service';
+import { WarningDialogComponent } from '../warning_dialog/warning_dialog.component';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { mathRouteNames, mathTitles } from '../app.routes';
 import { CommonModule } from '@angular/common';

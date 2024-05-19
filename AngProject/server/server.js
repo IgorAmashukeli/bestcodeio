@@ -471,7 +471,12 @@ async function getDocumentKeyByQuery(collection_name, query) {
     try {
         const collection = await getCollection(collection_name);
         const document = await collection.findOne(query);
-        return document._id.toHexString();
+        if (document) {
+            return document._id.toHexString();
+        } else {
+            return null;
+        }
+        
 
     } catch (err) {
         console.error("Error retrieving the document keys by the query", err);

@@ -1,4 +1,7 @@
 const { MongoClient, ObjectId } = require("mongodb");
+const fs = require('fs');
+const { assert } = require("console");
+
 
 async function connect(client) {
     try {
@@ -53,7 +56,8 @@ async function getAllDocuments(collection) {
 
 async function insertDocument(collection, document) {
     try {
-        const _ = await collection.insertOne(document);
+        const response = await collection.insertOne(document);
+        return response.insertedId.toHexString();
     } catch (err) {
         console.error("Error inserting the document into the collection", err);
     }
@@ -147,22 +151,131 @@ async function deleteDocumentsByQuery(collection, query) {
     }
 }
 
+
+async function updateKeysProblems(db, newProblem) {
+    try {
+        const collection = await getCollection(db, "ProblemKeys")
+
+        let docs = await getAllDocuments(collection);
+
+        const doc = docs[0];
+
+        const key = doc._id.toHexString();
+
+        let content = doc;
+
+        let keys_arr = content["keys"];
+
+        keys_arr.push(newProblem);
+
+        content = {"keys" : keys_arr};
+
+        await updateDocumentByKey(collection, key, content, {})
+
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
+
+
+async function updateUserProblems(db, newProblem) {
+    try {
+
+        const collection = await getCollection(db, "Users");
+
+        let docs = await getAllDocuments(collection);
+
+        for (let doc of docs) {
+            
+            let content = doc;
+            let key = doc._id.toHexString();
+
+            content['problems'][newProblem] = {'status' : 'Not solved', 'last solutions' : []};
+            
+            await updateDocumentByKey(collection, key, content, {});
+
+        }
+        
+
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
+
+async function add_problem (db, content) {
+    try {
+        const collection = await getCollection(db, "Problems");
+        const key = await insertDocument(collection, content);
+        await updateUserProblems(db, key);
+        await updateKeysProblems(db, key);
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
+
 const uri = "mongodb+srv://IgorAmashukeli:*Rb$XUFbXrrjr9a@cosmosclusteramashukeli.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000";
 const client = new MongoClient(uri);
 const database_name = "BestCode";
 const collection_name = ["Users", "Problems", "ProblemKeys"];
 
 
-function add_lines(array_str) {
-    return array_str.join('\n\n');
+async function add_problem_to_database(content) {
+    try {
+        await connect(client);
+        const db = await getDatabase(client, "BestCode");
+        await add_problem(db, content);
+    } catch (err) {
+        console.error(err);
+    } finally {
+        await disconnect(client);
+    }
 }
 
 
-connect(client).then (async() => {
-    const db = await getDatabase(client, "BestCode");
-    const collection = await getCollection(db, "Users");
-    const documents = await getAllDocuments(collection);
-    console.log(documents);
+async function list_collection(collection_name) {
+    try {
+        await connect(client);
+        const db = await getDatabase(client, "BestCode");
+        const collection = await getCollection(db, "collection_name");
+        const documents = await getAllDocuments(collection);
+        console.log(documents);
+    } catch (err) {
+        console.error(err);
+    } finally {
+        await disconnect(client);
+    }
+}
 
-    await disconnect(client);
-})
+function get_document(file, callback) {
+    fs.readFile(file, 'utf8', (err, data) => {
+            if (err) {
+                console.error('Error reading JSON file:', err);
+                callback(err, null);
+            }
+            
+            try {
+                const jsonData = JSON.parse(data);
+                callback(null, jsonData);
+            } catch (error) {
+                console.error('Error parsing JSON file:', error);
+                callback(err, null);
+            }
+        }
+    )
+}
+
+
+get_document("output1.json", (error, document1) => {
+    if (error) {
+        console.error('Error:', error);
+        return;
+    }
+    if (document1) {
+        add_problem_to_database(document1);
+    }
+    
+});
+
