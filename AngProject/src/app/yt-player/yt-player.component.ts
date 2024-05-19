@@ -32,7 +32,6 @@ export class YtPlayerComponent implements AfterViewInit {
 
   onResize(): void {
     this.videoWidth = this.youTubePlayer.nativeElement.clientWidth;
-    // so you keep the ratio
     this.videoHeight = this.videoWidth * 0.6;
     this.changeDetectorRef.detectChanges();
   }

@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Observable, Subject, firstValueFrom, of } from 'rxjs';
+import { Observable, Subject, of } from 'rxjs';
 import { DataService } from '../services/data.service';
 import { Auth, Unsubscribe } from '@angular/fire/auth';
 import { AuthService } from '../services/auth.service';
@@ -17,9 +17,9 @@ import { FormsModule } from '@angular/forms';
 })
 export class SubmissionsComponent implements OnInit {
   course_type: boolean = false;
-  OK : boolean = false;
+  OK: boolean = false;
   submission_code: string = '';
-  submission_log : string = '';
+  submission_log: string = '';
   submissions_array = [];
   submission_language: string = '';
   loading$ = new Subject<boolean>();
@@ -101,14 +101,14 @@ export class SubmissionsComponent implements OnInit {
     this.code_view = of(true);
   }
 
-  open_code(index : number) {
+  open_code(index: number) {
     this.submission_language = 'cpp';
     this.submission_code = this.submissions_array[index]['code'];
     this.table_view = of(false);
     this.code_view = of(true);
   }
 
-  open_log(index : number) {
+  open_log(index: number) {
     this.table_view = of(false);
     this.code_view = of(false);
     this.submission_log = this.submissions_array[index]['log'];

@@ -1,19 +1,6 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { math_indices } from '../app.routes';
-import { programming_indices } from '../app.routes';
-import {
-  math_problems,
-  programming_problems,
-} from '../problem_list/problem_list';
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Problem } from '../problem_list/problem_list';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
 import { HttpClientModule } from '@angular/common/http';
@@ -48,7 +35,8 @@ export class DescriptionComponent implements OnInit {
     this.accepted = problem['accepted'];
     this.submitted = problem['submitted'];
     if (this.submitted != 0) {
-      const acceptance_rate_not_rounded = (this.accepted / this.submitted) * 100;
+      const acceptance_rate_not_rounded =
+        (this.accepted / this.submitted) * 100;
       this.acceptance_rate = parseFloat(acceptance_rate_not_rounded.toFixed(2));
     }
     this.description_text = problem['description_text'];
@@ -63,7 +51,6 @@ export class DescriptionComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private http: HttpClient,
     private sanitizer: DomSanitizer,
     public dataService: DataService
   ) {}

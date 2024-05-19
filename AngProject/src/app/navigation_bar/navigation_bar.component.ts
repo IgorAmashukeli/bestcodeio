@@ -6,9 +6,7 @@ import { AuthService } from '../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { SignInDialogComponent } from '../sign_in_dialog/sign_in_dialog.component';
 import { WarningDialogComponent } from '../warning_dialog/warning_dialog.component';
-import { Auth, authState, User } from '@angular/fire/auth';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
-import firebase from 'firebase/app';
+import { Auth, User } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-navigation_bar',

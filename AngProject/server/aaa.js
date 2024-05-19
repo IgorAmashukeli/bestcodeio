@@ -2,14 +2,18 @@ const express = require('express');
 const cors = require('cors');
 const Docker = require('dockerode');
 const fs = require('fs');
-const { MongoClient, ObjectId } = require("mongodb");
-const { get } = require('http');
+
 
 const docker = new Docker();
+
 const volumePath = '/home/igor/Programming/Industry/PetProjects/bestcodeio/AngProject/server';
+
 const containerPath = '/data'
 
+const oracledb = require('oracledb');
+
 let some_theorems = ""
+
 let container = '';
 
 
@@ -31,9 +35,7 @@ function checkContainersForImage(imageName, callback) {
 }
 
 
-
 async function runLEANContainer(data) {
-
     code = data["code"]
     required_theorems = data["required_theorems"]
 
@@ -82,7 +84,6 @@ async function runLEANContainer(data) {
         });
     });
 }
-
 
 
 function check_including(code, required_theorems) {
@@ -165,6 +166,10 @@ async function executeLeanCommandWithTimeout(code, required_theorems, timeoutSec
 }
 
 
+
+
+
+
 async function runCppContainer(data) {
     code = data["code"]
     extra_flag = data["extra_flag"]
@@ -214,6 +219,9 @@ async function runCppContainer(data) {
         });
     });
 }
+
+
+
 
 
 async function compileCppCommand(extra_flag) {
@@ -271,7 +279,6 @@ function parseWALog(logData) {
 }
 
 
-
 function parseOKLog(logData) {
     const logParts = logData.split('\n');
     const max_time = logParts[1];
@@ -281,6 +288,7 @@ function parseOKLog(logData) {
         runtime: max_time
     }
 }
+
 
 
 async function executeCppCommandWithTimeout(code, timeoutSeconds) {
@@ -331,29 +339,133 @@ async function executeCppCommandWithTimeout(code, timeoutSeconds) {
 
 
 
-const uri = "mongodb+srv://IgorAmashukeli:*Rb$XUFbXrrjr9a@cosmosclusteramashukeli.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000";
-const client = new MongoClient(uri);
-const database_name = "BestCode";
 
+
+
+
+if (process.platform === 'linux') {
+    oracledb.initOracleClient({
+        libDir: '/opt/oracle/instantclient_21_13',
+        configDir: '/home/igor/Programming/Industry/PetProjects/autDBWallet'
+    });
+}
+
+
+oracledb.autoCommit = true;
 
 
 const app = express();
 const port = 3000;
-app.use(express.json());
-app.use(cors());
+
+
+let connection
+
+
+
+async function getDocumentsByQuery(collection_name, query) {
+    try {
+        const soda = connection.getSodaDatabase();
+
+        collection = await soda.openCollection(collection_name);
+
+        const documents = await collection.find().filter(query).getDocuments();
+        const jsonObjects = documents.map(doc => doc.getContent());
+
+        if (jsonObjects.length > 0) {
+            return jsonObjects;
+        } else {
+            return [];
+        }
+    } catch (err) {
+        console.error(err);
+        return [];
+    }
+}
+
+
+async function getDocumentKeysByQuery(collection_name, query) {
+    try {
+        const soda = connection.getSodaDatabase();
+
+        collection = await soda.openCollection(collection_name);
+
+        const documents = await collection.find().filter(query).getDocuments();
+        const jsonObjects = documents.map(doc => doc.key);
+
+        if (jsonObjects.length > 0) {
+            return jsonObjects;
+
+        } else {
+            return [];
+        }
+    } catch (err) {
+        console.error(err);
+        return [];
+    }
+}
+
+
+async function getDocumentAndKeysByQuery(collection_name, query) {
+    try {
+        const soda = connection.getSodaDatabase();
+
+        collection = await soda.openCollection(collection_name);
+
+        const documents = await collection.find().filter(query).getDocuments();
+        const jsonObjects = documents.map(doc => [doc.key, doc.getContent()]);
+
+        if (jsonObjects.length > 0) {
+            return jsonObjects;
+
+        } else {
+            return [];
+        }
+    } catch (err) {
+        console.error(err);
+        return [];
+    }
+}
+
+
+
 let server;
-let db;
+async function initializeConnectionPool() {
+    try {
+        await oracledb.createPool({
+            user: 'first_user',
+            password: process.env.MYPW,
+            connectString: 'autodb_high',
+            poolMax: 10,
+            poolMin: 2,
+            poolIncrement: 2,
+            poolTimeout: 60,
+            queueTimeout: 60000
+        });
+        console.log('Connection pool initialized successfully.');
+    } catch (err) {
+        console.error('Error initializing connection pool:', err);
+        throw err;
+    }
+}
 
 
 async function startServer() {
     try {
+        await initializeConnectionPool();
         server = app.listen(port, () => {
             console.log(`Server listening at http://localhost:${port}`);
         });
+        connection = await oracledb.getConnection();
     } catch (err) {
         console.error('Error starting server:', err);
     }
 }
+
+startServer();
+
+process.on('SIGINT', () => {
+    closeServer();
+});
 
 
 async function closeServer() {
@@ -370,168 +482,62 @@ async function closeServer() {
 }
 
 
-async function connect(client) {
+
+app.use(express.json());
+app.use(cors())
+
+
+
+
+
+app.get('/get_problem/:course/:topic/:problemId', async (req, res) => {
     try {
-        await client.connect();
-        console.log("Connected to Cosmos DB");
-    } catch (err) {
-        console.error("Error connecting to Cosmos DB:", err);
+        const course = req.params.course;
+        const topic = req.params.topic;
+        const problemId = req.params.problemId;
+
+        const query = { "id": parseInt(problemId), "course": '/' + course + '/' + topic };
+        const problem = await getDocumentsByQuery("mycollection", query);
+
+        res.status(200).json(problem)
+
+    } catch (error) {
+        console.error("Error fetching problem:", error);
+        res.status(500).json({ error: 'Internal server error' });
     }
-}
-
-
-async function getDatabase(client, databaseName) {
-    try {
-        db = await client.db(databaseName);
-    } catch (err) {
-        console.error("Error creating/finding database:", err);
-    }
-}
-
-
-async function getCollection(collectionName) {
-    try {
-        const collection = await db.collection(collectionName);
-        return collection;
-    } catch (err) {
-        console.error("Error creating/finding collection:", err);
-    }
-}
-
-
-async function disconnect(client) {
-    try {
-        await client.close();
-        console.log("Disconnected from Cosmos DB");
-    } catch (err) {
-        console.error("Error disconnecting to Cosmos DB:", err);
-        process.exit(1);
-    }
-}
-
-async function init() {
-    await connect(client);
-    await getDatabase(client, "BestCode");
-    await startServer();
-}
-
-
-async function stop() {
-    await closeServer();
-    await disconnect(client);
-}
-
-
-init();
-process.on('SIGINT', () => {
-    stop();
 });
 
 
-
-async function insertDocument(collection, document) {
+app.get('/get_user/:user_id', async (req, res) => {
     try {
-        const _ = await collection.insertOne(document);
-    } catch (err) {
-        console.error("Error inserting the document into the collection", err);
+        const user_id = req.params.user_id;
+        const query = { "user_id": user_id }
+        const user = await getDocumentsByQuery("users", query)
+        res.status(200).json(user)
+
+    } catch (error) {
+        console.error("Error fetching problem:", error);
+        res.status(500).json({ error: 'Internal server error' });
     }
-}
+})
 
 
-async function getDocumentByQuery(collection_name, query) {
+async function getAllDocumentsWithKeys(collectionName) {
     try {
-        const collection = await getCollection(collection_name);
-        const document = await collection.findOne(query);
-        if (!document) {
-            console.log("No document with this query");
-            return {};
-        }
-        return document;
-    } catch (err) {
-        console.error("Error retrieving the document by the query", err);
-    }
-}
+        const soda = connection.getSodaDatabase();
 
+        collection = await soda.openCollection(collectionName);
 
+        const docs = await collection.find().getDocuments();
 
-
-async function getDocumentsByQuery(collection_name, query) {
-    try {
-        const collection = await getCollection(collection_name);
-        const documents = await collection.find(query).toArray();
-        return documents;
-    } catch (err) {
-        console.error("Error retrieving the documents by the query", err);
-        return [];
-    }
-}
-
-
-async function getDocumentKeyByQuery(collection_name, query) {
-    try {
-        const collection = await getCollection(collection_name);
-        const document = await collection.findOne(query);
-        return document._id.toHexString();
-
-    } catch (err) {
-        console.error("Error retrieving the document keys by the query", err);
-        return [];
-    }
-}
-
-
-async function getDocumentKeysByQuery(collection_name, query) {
-    try {
-        const collection = await getCollection(collection_name);
-        const documents = await collection.find(query).toArray();
-        const keys = documents.map(doc => doc._id.toHexString());
-        return keys;
-
-    } catch (err) {
-        console.error("Error retrieving the document keys by the query", err);
-        return [];
-    }
-}
-
-
-
-async function getDocumentAndKeysByQuery(collection_name, query) {
-    try {
-        const collection = await getCollection(collection_name);
-        const document = await collection.findOne(query);
-
-        return [document._id.toHexString(), document];
-    } catch (err) {
-        console.error("Error retrieving the documents and their keys by the query", err);
-        return [];
-    }
-}
-
-
-
-async function getDocumentsAndKeysByQuery(collection_name, query) {
-    try {
-        const collection = await getCollection(collection_name);
-        const documents = await collection.find(query).toArray();
-
-        const jsonObjects = documents.map(doc => [doc._id.toHexString(), doc]);
-
-        return jsonObjects;
-    } catch (err) {
-        console.error("Error retrieving the documents and their keys by the query", err);
-        return [];
-    }
-}
-
-
-async function getAllDocumentKeys() {
-    try {
-        const collection = await getCollection("ProblemKeys");
-
-        const keys = await collection.findOne({});
-
-        if (keys) {
-            return [keys['keys']];
+        if (docs.length > 0) {
+            const allDocuments = docs.map(doc => {
+                return {
+                    key: doc.key,
+                    content: doc.getContent()
+                };
+            });
+            return allDocuments;
         } else {
             return [];
         }
@@ -542,27 +548,55 @@ async function getAllDocumentKeys() {
 }
 
 
-async function getAllDocumentsWithKeysByCourse(collection_name, cur_course) {
+async function getAllDocumentKeys() {
     try {
-        const collection = await getCollection(collection_name);
+        const soda = connection.getSodaDatabase();
 
-        const query = {"course" : cur_course};
+        const collection = await soda.openCollection("keys_collection");
+        const collection2 = await soda.openCollection("users");
 
-        const sort = {};
-        sort['id'] = 1;
+        const keys = await collection.find().getDocuments();
 
-        const docs = await collection.find(query).sort(sort).toArray();
+        if (keys.length > 0) {
+            return [keys[0].getContent()['keys'], collection2];
+        } else {
+            return [];
+        }
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
 
-        if (docs) {
+
+async function getAllDocumentsWithKeysByCourse(collectionName, cur_course) {
+    try {
+        const soda = connection.getSodaDatabase();
+
+        const collection = await soda.openCollection(collectionName);
+
+        const query = {
+            "$query": {
+                "course": cur_course
+            },
+            "$orderby": [
+                { "path": "id", "datatype": "number", "order": "asc" }
+            ]
+        };
+
+        const docs = await collection.find().filter(query).getDocuments();
+
+        if (docs.length > 0) {
             const allDocuments = docs.map(doc => {
+                doc_content = doc.getContent();
                 return {
-                    key: doc._id.toHexString(),
+                    key: doc.key,
                     content: {
-                        "title": doc['title'],
-                        "course": doc['course'],
-                        "id": doc['id'],
-                        "difficulty": doc['difficulty'],
-                        "video_id": doc['video_id']
+                        "title": doc_content['title'],
+                        "course": doc_content['course'],
+                        "id": doc_content['id'],
+                        "difficulty": doc_content['difficulty'],
+                        "video_id": doc_content['video_id']
                     }
                 };
             });
@@ -572,38 +606,56 @@ async function getAllDocumentsWithKeysByCourse(collection_name, cur_course) {
             return [];
         }
     } catch (err) {
-        console.error("Error retrieving all documents and their keys by course", err);
+        console.error(err);
         return null;
     }
 }
 
 
-async function getDocumentByKey(collection, key) {
+app.post('/create_user/:user_id', async (req, res) => {
     try {
-        const document = await collection.findOne({ _id: ObjectId.createFromHexString(key) });
-        if (!document) {
-            console.log("No document with this key");
-            return null;
+        const user_id = req.params.user_id;
+        const result = await getAllDocumentKeys();
+        if (result == null || result.length != 2) {
+            res.status(500).json({ error: "Wrong result" });
         }
-        return document;
-    } catch (err) {
-        console.error("Error retrieving the document by key", err);
+        const [keys, collection] = result;
+
+        let userInfo_result = {};
+
+        keys.forEach(key => {
+            userInfo_result[key] = {
+                "status": "Not solved",
+                "last solutions": []
+            };
+        });
+
+        const userInfo = { "user_id": user_id, "problems": userInfo_result };
+
+        const ins_res = await collection.insertOneAndGet(userInfo);
+        if (ins_res) {
+            res.status(200).json(ins_res);
+        } else {
+            res.status(500).json({ error: 'Internal server error' });
+        }
+
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error2' });
     }
-}
+})
+
 
 
 async function updateDocumentByKey(collection_name, key, updatedContent) {
     try {
-        const collection = await getCollection(collection_name);
-
-        const doc = await getDocumentByKey(collection, key);
+        const soda = connection.getSodaDatabase();
+        const collection = await soda.openCollection(collection_name);
+        const doc = await collection.find().key(key).getOne();
 
         if (doc) {
-            const res = await collection.updateOne({ _id: ObjectId.createFromHexString(key) },
-            {$set : updatedContent});
+            const updatedDoc = await collection.find().key(key).replaceOneAndGet(updatedContent);
 
-
-            if (res.matchedCount == 1) {
+            if (updatedDoc) {
                 return true;
             } else {
                 return false;
@@ -619,87 +671,16 @@ async function updateDocumentByKey(collection_name, key, updatedContent) {
 }
 
 
+
 app.get('/get_problems/:course/:topic', async (req, res) => {
     try {
         const course = req.params.course;
         const topic = req.params.topic;
-        const list = await getAllDocumentsWithKeysByCourse("Problems", '/' + course + '/' + topic);
+        const list = await getAllDocumentsWithKeysByCourse("mycollection", '/' + course + '/' + topic);
         res.status(200).json(list);
 
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });
-    }
-})
-
-
-app.get('/get_problem/:course/:topic/:problemId', async (req, res) => {
-    try {
-        const course = req.params.course;
-        const topic = req.params.topic;
-        const problemId = req.params.problemId;
-
-        const query = { "id": parseInt(problemId), "course": '/' + course + '/' + topic };
-        const problem = await getDocumentsByQuery("Problems", query);
-
-        res.status(200).json(problem)
-
-    } catch (error) {
-        console.error("Error fetching problem:", error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-
-
-app.get('/get_user/:user_id', async (req, res) => {
-    try {
-        const user_id = req.params.user_id;
-        const query = { "user_id": user_id }
-        const user = await getDocumentsByQuery("Users", query)
-        res.status(200).json(user)
-
-    } catch (error) {
-        console.error("Error fetching problem:", error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-})
-
-
-app.post('/create_user/:user_id', async (req, res) => {
-    try {
-
-        const collection = await getCollection("Users");
-
-        const user_id = req.params.user_id;
-        const result = await getAllDocumentKeys();
-        if (result == null || result.length != 1) {
-            res.status(500).json({ error: "Wrong result" });
-            return;
-        }
-        const [keys] = result;
-
-        let userInfo_result = {};
-
-        keys.forEach(key => {
-            userInfo_result[key] = {
-                "status": "Not solved",
-                "last solutions": []
-            };
-        });
-
-        const userInfo = { "user_id": user_id, "problems": userInfo_result };
-
-        await insertDocument(collection, userInfo);
-        const ins_res = await getDocumentByQuery("Users", {"user_id": user_id});
-
-        if (ins_res) {
-            res.status(200).json(ins_res);
-        } else {
-            res.status(500).json({ error: 'Internal server error' });
-        }
-
-    } catch (error) {
-        res.status(500).json({ error: 'Internal server error2' });
     }
 })
 
@@ -711,21 +692,18 @@ app.post('/submit_math/:topic/:problem_id', async (req, res) => {
         const topic = req.params.topic;
         const problemId = req.params.problem_id;
 
-
         const query = { "id": parseInt(problemId), "course": '/' + 'math' + '/' + topic };
-        const problem = await getDocumentByQuery("Problems", query);
-
+        const problems = await getDocumentsByQuery("mycollection", query);
+        const problem = problems[0];
         const requirements = problem['requirements'];
-        
         const result = await runLEANContainer({ "code": code["code"], "required_theorems": requirements });
-
 
         problem['submitted']++;
 
-        const keys = await getDocumentKeysByQuery("Problems", query);
+        const keys = await getDocumentKeysByQuery("mycollection", query);
         const key = keys[0];
 
-        const response = await updateDocumentByKey("Problems", key, problem);
+        const response = await updateDocumentByKey("mycollection", key, problem);
 
         result['time'] = getTime()
         result['code'] = code["code"];
@@ -739,10 +717,6 @@ app.post('/submit_math/:topic/:problem_id', async (req, res) => {
 
 
 
-
-
-
-
 app.put('/problem_solved/:user_id/:course/:topic/:problem_id', async (req, res) => {
     try {
         const user_id = req.params.user_id;
@@ -750,35 +724,25 @@ app.put('/problem_solved/:user_id/:course/:topic/:problem_id', async (req, res) 
         const topic = req.params.topic;
         const problem_id = req.params.problem_id;
 
-        
-
         const query_problem = { "id": parseInt(problem_id), "course": '/' + course + '/' + topic };
-        const key_problem = await getDocumentKeyByQuery('Problems', query_problem);
-
+        const keys_problem = await getDocumentKeysByQuery('mycollection', query_problem);
+        const key_problem = keys_problem[0];
 
         const query_user = { "user_id": user_id };
-        const key_and_objects_user = await getDocumentAndKeysByQuery('Users', query_user);
-
-    
-        const key_user = key_and_objects_user[0];
-
+        const keys_and_objects_user = await getDocumentAndKeysByQuery('users', query_user);
+        const key_and_objects_user = keys_and_objects_user[0]
+        const key_user = key_and_objects_user[0]
         let content_user = key_and_objects_user[1];
-
-
-
         content_user["problems"][key_problem]["status"] = "Solved";
 
-        const result = await updateDocumentByKey("Users", key_user, {"problems" : content_user["problems"]});
+        const result = await updateDocumentByKey("users", key_user, content_user);
 
-        const problem = await getDocumentByQuery("Problems", query_problem);
-
+        const problems = await getDocumentsByQuery("mycollection", query_problem);
+        const problem = problems[0];
         problem['accepted']++;
 
 
-
-        const response = await updateDocumentByKey("Problems", key_problem, problem);
-
-
+        const response = await updateDocumentByKey("mycollection", key_problem, problem);
 
         if (result) {
             res.status(200).json("OK");
@@ -804,10 +768,12 @@ app.put('/add_submissions/:user_id/:course/:topic/:problem_id', async (req, res)
         const problem_id = req.params.problem_id;
 
         const query_problem = { "id": parseInt(problem_id), "course": '/' + course + '/' + topic };
-        const key_problem = await getDocumentKeyByQuery('Problems', query_problem);
+        const keys_problem = await getDocumentKeysByQuery('mycollection', query_problem);
+        const key_problem = keys_problem[0];
 
         const query_user = { "user_id": user_id };
-        const key_and_objects_user = await getDocumentAndKeysByQuery('Users', query_user);
+        const keys_and_objects_user = await getDocumentAndKeysByQuery('users', query_user);
+        const key_and_objects_user = keys_and_objects_user[0]
         const key_user = key_and_objects_user[0]
         let content_user = key_and_objects_user[1];
 
@@ -817,7 +783,7 @@ app.put('/add_submissions/:user_id/:course/:topic/:problem_id', async (req, res)
 
             content_user["problems"][key_problem]["last solutions"].push(json_object);
 
-            const result = await updateDocumentByKey("Users", key_user, content_user);
+            const result = await updateDocumentByKey("users", key_user, content_user);
 
             if (result) {
                 res.status(200).json(content_user);
@@ -837,7 +803,7 @@ app.put('/add_submissions/:user_id/:course/:topic/:problem_id', async (req, res)
                 json_object
             ]
 
-            const result = await updateDocumentByKey("Users", key_user, content_user);
+            const result = await updateDocumentByKey("users", key_user, content_user);
 
             if (result) {
                 res.status(200).json(content_user);
@@ -858,7 +824,6 @@ app.put('/add_submissions/:user_id/:course/:topic/:problem_id', async (req, res)
 
 
 
-
 app.get('/get_submissions/:user_id/:course/:topic/:problem_id', async (req, res) => {
     try {
         const user_id = req.params.user_id;
@@ -867,10 +832,12 @@ app.get('/get_submissions/:user_id/:course/:topic/:problem_id', async (req, res)
         const problem_id = req.params.problem_id;
 
         const query_problem = { "id": parseInt(problem_id), "course": '/' + course + '/' + topic };
-        const key_problem = await getDocumentKeyByQuery('Problems', query_problem);
+        const keys_problem = await getDocumentKeysByQuery('mycollection', query_problem);
+        const key_problem = keys_problem[0];
 
         const query_user = { "user_id": user_id };
-        const key_and_objects_user = await getDocumentAndKeysByQuery('Users', query_user);
+        const keys_and_objects_user = await getDocumentAndKeysByQuery('users', query_user);
+        const key_and_objects_user = keys_and_objects_user[0]
         const content_user = key_and_objects_user[1];
 
         const result = content_user["problems"][key_problem]["last solutions"];
@@ -892,9 +859,9 @@ app.post('/run_programming/:topic/:problem_id', async (req, res) => {
         const problemId = req.params.problem_id;
 
         const query = { "id": parseInt(problemId), "course": '/' + 'programming' + '/' + topic };
-        const problem = await getDocumentByQuery("Problems", query);
-        const run_headers = problem['run_headers'];
-        const run_body = problem['run_code'];
+        const problem = await getDocumentsByQuery("mycollection", query);
+        const run_headers = problem[0]['run_headers'];
+        const run_body = problem[0]['run_code'];
         const run_code = run_headers + code["code"] + run_body;
 
 
@@ -925,7 +892,8 @@ app.post('/submit_programming/:topic/:problem_id', async (req, res) => {
         const problemId = req.params.problem_id;
 
         const query = { "id": parseInt(problemId), "course": '/' + 'programming' + '/' + topic };
-        const problem = await getDocumentByQuery("Problems", query);
+        const problems = await getDocumentsByQuery("mycollection", query);
+        const problem = problems[0];
         const submit_headers = problem['submit_headers'];
         const submit_body = problem['submit_code'];
         const submit_code = submit_headers + code["code"] + submit_body;
@@ -934,10 +902,10 @@ app.post('/submit_programming/:topic/:problem_id', async (req, res) => {
         const logs = compile_result["compile_logs"];
 
         problem['submitted']++;
-        const keys = await getDocumentKeysByQuery("Problems", query);
+        const keys = await getDocumentKeysByQuery("mycollection", query);
         const key = keys[0];
 
-        const _ = await updateDocumentByKey("Problems", key, problem);
+        const response = await updateDocumentByKey("mycollection", key, problem);
 
 
 
