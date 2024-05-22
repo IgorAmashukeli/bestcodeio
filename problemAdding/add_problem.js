@@ -235,6 +235,19 @@ async function add_problem_to_database(content) {
 }
 
 
+async function update_problem_to_database(query, content) {
+    try {
+        await connect(client);
+        const db = await getDatabase(client, "BestCode");
+        const collection = await getCollection(db, "Problems");
+        await updateDocumentByQuery(collection, query, content, {});
+    } catch (err) {
+        console.error(err);
+    } finally {
+        await disconnect(client);
+    }
+}
+
 async function list_collection(collection_name) {
     try {
         await connect(client);
@@ -268,13 +281,14 @@ function get_document(file, callback) {
 }
 
 
-get_document("output1.json", (error, document1) => {
+
+get_document("output6.json", (error, document1) => {
     if (error) {
         console.error('Error:', error);
         return;
     }
     if (document1) {
-        add_problem_to_database(document1);
+        update_problem_to_database({title: "Binary relations"}, document1)
     }
     
 });
