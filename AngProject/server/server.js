@@ -6,7 +6,7 @@ const { MongoClient, ObjectId } = require("mongodb");
 const { get } = require('http');
 
 const docker = new Docker();
-const volumePath = '/home/igor/Programming/Industry/PetProjects/bestcodeio/AngProject/server';
+const volumePath = __dirname
 const containerPath = '/data'
 
 let some_theorems = ""
