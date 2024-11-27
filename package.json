@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "dockerode": "^4.0.2"
+  }
+}
